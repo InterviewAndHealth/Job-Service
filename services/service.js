@@ -20,83 +20,64 @@ class Service {
   }
 
   // Login method will be used to authenticate the user
-  async login(email, password) {
-    const user = await this.repository.getUser(email);
+  // async login(email, password) {
+  //   const user = await this.repository.getUser(email);
 
-    if (!user) throw new NotFoundError("User not found");
+  //   if (!user) throw new NotFoundError("User not found");
 
-    if (!(await bcrypt.compare(password, user.password)))
-      throw new BadRequestError("Invalid password");
+  //   if (!(await bcrypt.compare(password, user.password)))
+  //     throw new BadRequestError("Invalid password");
 
-    EventService.publish(TEST_QUEUE, {
-      type: EVENT_TYPES.USER_LOGGED_IN,
-      data: {
-        userId: user.public_id,
-        email: user.email,
-      },
-    });
+  //   EventService.publish(TEST_QUEUE, {
+  //     type: EVENT_TYPES.USER_LOGGED_IN,
+  //     data: {
+  //       userId: user.public_id,
+  //       email: user.email,
+  //     },
+  //   });
 
-    return {
-      message: "Login successful",
-      user: {
-        id: user.public_id,
-        email: user.email,
-        name: user.name,
-        created_at: user.created_at,
-      },
-    };
-  }
+  //   return {
+  //     message: "Login successful",
+  //     user: {
+  //       id: user.public_id,
+  //       email: user.email,
+  //       name: user.name,
+  //       created_at: user.created_at,
+  //     },
+  //   };
+  // }
 
   // Register method will be used to create a new user
-  async register(email, password, name) {
-    const user = await this.repository.getUser(email);
-    if (user) throw new BadRequestError("User already exists");
+  // async register(email, password, name) {
+  //   const user = await this.repository.getUser(email);
+  //   if (user) throw new BadRequestError("User already exists");
 
-    const hashedPassword = await bcrypt.hash(password, 10);
-    const newUser = await this.repository.createUser(
-      email,
-      hashedPassword,
-      name
-    );
+  //   const hashedPassword = await bcrypt.hash(password, 10);
+  //   const newUser = await this.repository.createUser(
+  //     email,
+  //     hashedPassword,
+  //     name
+  //   );
 
-    EventService.publish(TEST_QUEUE, {
-      type: EVENT_TYPES.USER_CREATED,
-      data: {
-        userId: newUser.public_id,
-        email: newUser.email,
-      },
-    });
+  //   EventService.publish(TEST_QUEUE, {
+  //     type: EVENT_TYPES.USER_CREATED,
+  //     data: {
+  //       userId: newUser.public_id,
+  //       email: newUser.email,
+  //     },
+  //   });
 
-    return {
-      message: "User created successfully",
-      user: {
-        id: newUser.public_id,
-        email: newUser.email,
-        name: newUser.name,
-        created_at: newUser.created_at,
-      },
-    };
-  }
+  //   return {
+  //     message: "User created successfully",
+  //     user: {
+  //       id: newUser.public_id,
+  //       email: newUser.email,
+  //       name: newUser.name,
+  //       created_at: newUser.created_at,
+  //     },
+  //   };
+  // }
 
-  async rpc_test() {
-    const data = await RPCService.request(TEST_RPC, {
-      type: TEST_RPC,
-      data: "Requesting data",
-    });
-
-    if (!data) throw new InternalServerError("Failed to get data");
-
-    return data;
-  }
-
-  static async handleEvent(data) {
-    console.log(data);
-  }
-
-  static async respondRPC(data) {
-    console.log(data);
-    return { data: "This is a response of rpc" };
-  }
 }
 
 EventService.subscribe(SERVICE_QUEUE, Service);

@@ -21,3 +21,7 @@ yarn.lock
 
 tmp/
 docker/
+
+
+.env
+.env.development
