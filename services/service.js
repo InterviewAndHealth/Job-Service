@@ -78,6 +78,40 @@ class Service {
   //   };
   // }
 
+
+
+  async createJob(jobData) {
+
+    const job = await this.repository.createJob(jobData);
+    return {
+      message: "Job created successfully",
+      job,
+    };
+  }
+
+  async deleteJob(jobId) {
+    const job = await this.repository.getJobById(jobId);
+    if (!job) throw new NotFoundError("Job not found");
+
+    await this.repository.deleteJob(jobId);
+  }
+
+  async updateJob(jobId, updateData) {
+    const job = await this.repository.getJobById(jobId);
+    if (!job) throw new NotFoundError("Job not found");
+
+    const updatedJob = await this.repository.updateJob(jobId, updateData);
+    return {
+      message: "Job updated successfully",
+      updatedJob,
+    };
+  }
+
+  async getAllMyJobsPostings(userId) {
+    const jobs = await this.repository.getAllJobsPostedByUserId(userId);
+    return jobs;
+  }
+
 }
 
 EventService.subscribe(SERVICE_QUEUE, Service);
