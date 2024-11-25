@@ -25,8 +25,8 @@ class DB {
       this.#pool = new Pool({
         connectionString: `${DATABASE_URL}/${DATABASE_NAME}`,
         // ssl: NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
-        // ssl: false,
-        ssl: { rejectUnauthorized: false },
+        ssl: false,
+        // ssl: { rejectUnauthorized: false },
       });
 
       this.#pool.on("error", (err) => {
