@@ -1,17 +1,11 @@
-FROM node
+FROM node:23-alpine
 
-# Create app directory
 WORKDIR /app
-
-# Install app dependencies
-COPY package.json ./
+COPY package.json /app
 RUN npm install
+COPY . /app
 
-# Bundle app source
-COPY . .
-
-# Expose the port the app runs in
+ENV PORT=8000
 EXPOSE 8000
 
-# Run the app
 CMD ["npm", "start"]
