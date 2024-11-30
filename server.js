@@ -17,9 +17,12 @@ module.exports = async (app) => {
   app.use(cors());
   app.use(routes);
   app.use(error);
+
+
+
+  const jobsservice = new JobsService();
+await RPCService.respond(jobsservice);
+await EventService.subscribe(SERVICE_QUEUE, jobsservice);
 };
 
 
-const jobsservice = new JobsService();
-await RPCService.respond(jobsservice);
-await EventService.subscribe(SERVICE_QUEUE, interviewservice);
