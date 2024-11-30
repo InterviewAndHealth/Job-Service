@@ -5,26 +5,13 @@ const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 12);
 
 // Repository will be used to interact with the database
 class Repository {
-  // Get user by email
-  // async getUser(email) {
-  //   const result = await DB.query({
-  //     text: "SELECT * FROM users WHERE email = $1",
-  //     values: [email],
-  //   });
-  //   return result.rows[0];
-  // }
-
-  // // Create a new user
-  // async createUser(email, password, name) {
-  //   const id = nanoid();
-
-  //   const result = await DB.query({
-  //     text: "INSERT INTO users (public_id, email, password, name) VALUES ($1, $2, $3, $4) RETURNING *",
-  //     values: [id, email, password, name],
-  //   });
-
-  //   return result.rows[0];
-  // }
+  
+  async getAllOpenJobs(){
+    const result = await DB.query({
+      text: "SELECT * FROM jobs WHERE validity_status = 'open'",
+    });
+    return result.rows;
+  }
 
   async createJob({
     user_id,
@@ -199,6 +186,43 @@ class Repository {
     });
     return result.rows;
   }
+
+  async getAllApplicantsDetails(job_id){
+    const result = await DB.query({
+      text: "SELECT * FROM applications WHERE job_id = $1",
+      values: [job_id],
+    });
+    return result.rows;
+  }
+
+
+
+
+
+
+  //Applicants functions
+
+
+  async Applicant_applyJob(jobId, userId,name,email,resume) {
+    const id=nanoid();
+    const result = await DB.query({
+      text: "INSERT INTO applications (application_id,job_id, applicant_user_id,applicant_name,applicant_email,resume_link) VALUES ($1, $2, $3,$4,$5,$6) RETURNING *",
+      values: [id,jobId, userId,name,email,resume],
+    });
+    return result.rows[0];
+  }
+
+   async Applicant_getAllMyJobApplicationsByUserId(user_id) {
+    const result = await DB.query({
+      text: "SELECT * from applications join jobs on applications.job_id = jobs.job_id where applications.applicant_user_id = $1",
+      values: [user_id],
+    });
+
+
+    return result.rows;
+   }
+
+
 
 
   

@@ -5,6 +5,7 @@ const EVENT_TYPES = {
 
 const RPC_TYPES = {
   TEST_RPC: "TEST_RPC",
+  GET_APPLICANT_DETAILS: "GET_APPLICANT_DETAILS",
 };
 
 module.exports = {
