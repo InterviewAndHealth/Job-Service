@@ -28,13 +28,6 @@ class Repository {
     application_deadline,
   }) {
     const id = nanoid();
-    console.log("Heoolo");
-    const formatArrayForPG = (arr) => `{${arr.map((item) => `"${item}"`).join(',')}}`;
-
-    const Job_Location = formatArrayForPG(job_location);
-    const Restrict_Applicants_Country = formatArrayForPG(restrict_applicants_country);
-    const Required_Skills = formatArrayForPG(required_skills);
-
 
     const result = await DB.query({
       text: `
@@ -47,19 +40,17 @@ class Repository {
         user_id,
         job_title,
         job_experience,
-        Job_Location,
-        Restrict_Applicants_Country,
+        job_location,
+        restrict_applicants_country,
         job_type,
         work_type,
         salary_min,
         salary_max,
         job_description,
-        Required_Skills,
+        required_skills,
         application_deadline,
       ],
     });
-
-    console.log(result.rows);
 
     return result.rows[0];
   }
