@@ -29,6 +29,13 @@ class Repository {
   }) {
     const id = nanoid();
     console.log("Heoolo");
+    const formatArrayForPG = (arr) => `{${arr.map((item) => `"${item}"`).join(',')}}`;
+
+    const job_location = formatArrayForPG(job_location);
+    const restrict_applicants_country = formatArrayForPG(restrict_applicants_country);
+    const required_skills = formatArrayForPG(required_skills);
+
+
     const result = await DB.query({
       text: `
         INSERT INTO jobs 
