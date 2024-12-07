@@ -31,9 +31,9 @@ class Repository {
     console.log("Heoolo");
     const formatArrayForPG = (arr) => `{${arr.map((item) => `"${item}"`).join(',')}}`;
 
-    const job_location = formatArrayForPG(job_location);
-    const restrict_applicants_country = formatArrayForPG(restrict_applicants_country);
-    const required_skills = formatArrayForPG(required_skills);
+    const Job_Location = formatArrayForPG(job_location);
+    const Restrict_Applicants_Country = formatArrayForPG(restrict_applicants_country);
+    const Required_Skills = formatArrayForPG(required_skills);
 
 
     const result = await DB.query({
@@ -47,14 +47,14 @@ class Repository {
         user_id,
         job_title,
         job_experience,
-        job_location,
-        restrict_applicants_country,
+        Job_Location,
+        Restrict_Applicants_Country,
         job_type,
         work_type,
         salary_min,
         salary_max,
         job_description,
-        required_skills,
+        Required_Skills,
         application_deadline,
       ],
     });
