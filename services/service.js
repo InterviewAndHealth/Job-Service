@@ -37,7 +37,7 @@ class Service {
 
     const job = await this.repository.createJob(jobData);
     console.log(job);
-    if(!job) throw new InternalServerError("Failed to create job");
+    // if(!job) throw new InternalServerError("Failed to create job");
     return {
       message: "Job created successfully",
       job,
