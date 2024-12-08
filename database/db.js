@@ -26,6 +26,7 @@ class DB {
         connectionString: `${DATABASE_URL}/${DATABASE_NAME}`,
         // ssl: NODE_ENV === "production" ? { rejectUnauthorized: false } : false,
         ssl: false,
+        // ssl: { rejectUnauthorized: false },
       });
 
       this.#pool.on("error", (err) => {
@@ -38,7 +39,8 @@ class DB {
         this.#isConnected = true;
       });
 
-      this.createTable();
+      await this.createTable();
+      await this.createApplicationTable();
     }
     return this.#pool.connect();
   }
@@ -49,6 +51,13 @@ class DB {
 
   static async createTable() {
     const pathToSQL = path.join(__dirname, "queries", "jobs.sql");
+    const rawQuery = fs.readFileSync(pathToSQL).toString();
+    const query = rawQuery.replace(/\n/g, "").replace(/\s+/g, " ");
+    return this.#pool.query(query);
+  }
+
+  static async createApplicationTable() {
+    const pathToSQL = path.join(__dirname, "queries", "applications.sql");
     const rawQuery = fs.readFileSync(pathToSQL).toString();
     const query = rawQuery.replace(/\n/g, "").replace(/\s+/g, " ");
     return this.#pool.query(query);

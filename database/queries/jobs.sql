@@ -7,6 +7,10 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'work_type') THEN
         CREATE TYPE WORK_TYPE AS ENUM ('Remote', 'On-site', 'Hybrid');
     END IF;
+
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'validity_status_type') THEN
+        CREATE TYPE validity_status_type AS ENUM ('open', 'pause', 'close');
+    END IF;
 END $$;
 
 CREATE TABLE IF NOT EXISTS jobs (
@@ -23,6 +27,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     job_description TEXT NOT NULL,
     required_skills VARCHAR(255)[] NOT NULL,  
     application_deadline DATE DEFAULT NULL,
+    validity_status validity_status_type DEFAULT 'open',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );

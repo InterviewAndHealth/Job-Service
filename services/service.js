@@ -12,6 +12,7 @@ const {
   TEST_QUEUE,
   TEST_RPC,
 } = require("../config");
+const { RPC_TYPES } = require("../config");
 
 // Service will contain all the business logic
 class Service {
@@ -19,70 +20,23 @@ class Service {
     this.repository = new Repository();
   }
 
-  // Login method will be used to authenticate the user
-  // async login(email, password) {
-  //   const user = await this.repository.getUser(email);
+  async getAllOpenJobs(){
 
-  //   if (!user) throw new NotFoundError("User not found");
+    const jobs = await this.repository.getAllOpenJobs();
+    if(!jobs) throw new NotFoundError("No jobs found");
 
-  //   if (!(await bcrypt.compare(password, user.password)))
-  //     throw new BadRequestError("Invalid password");
-
-  //   EventService.publish(TEST_QUEUE, {
-  //     type: EVENT_TYPES.USER_LOGGED_IN,
-  //     data: {
-  //       userId: user.public_id,
-  //       email: user.email,
-  //     },
-  //   });
-
-  //   return {
-  //     message: "Login successful",
-  //     user: {
-  //       id: user.public_id,
-  //       email: user.email,
-  //       name: user.name,
-  //       created_at: user.created_at,
-  //     },
-  //   };
-  // }
-
-  // Register method will be used to create a new user
-  // async register(email, password, name) {
-  //   const user = await this.repository.getUser(email);
-  //   if (user) throw new BadRequestError("User already exists");
-
-  //   const hashedPassword = await bcrypt.hash(password, 10);
-  //   const newUser = await this.repository.createUser(
-  //     email,
-  //     hashedPassword,
-  //     name
-  //   );
-
-  //   EventService.publish(TEST_QUEUE, {
-  //     type: EVENT_TYPES.USER_CREATED,
-  //     data: {
-  //       userId: newUser.public_id,
-  //       email: newUser.email,
-  //     },
-  //   });
-
-  //   return {
-  //     message: "User created successfully",
-  //     user: {
-  //       id: newUser.public_id,
-  //       email: newUser.email,
-  //       name: newUser.name,
-  //       created_at: newUser.created_at,
-  //     },
-  //   };
-  // }
+    return {
+      message: "Jobs fetched successfully",
+      jobs,
+    }
+  }
 
 
 
   async createJob(jobData) {
 
     const job = await this.repository.createJob(jobData);
+    if(!job) throw new InternalServerError("Failed to create job");
     return {
       message: "Job created successfully",
       job,
@@ -94,6 +48,10 @@ class Service {
     if (!job) throw new NotFoundError("Job not found");
 
     await this.repository.deleteJob(jobId);
+
+    return {
+      message: "Job deleted successfully",
+    };
   }
 
   async updateJob(jobId, updateData) {
@@ -101,6 +59,7 @@ class Service {
     if (!job) throw new NotFoundError("Job not found");
 
     const updatedJob = await this.repository.updateJob(jobId, updateData);
+    if (!updatedJob) throw new InternalServerError("Failed to update job");
     return {
       message: "Job updated successfully",
       updatedJob,
@@ -109,12 +68,73 @@ class Service {
 
   async getAllMyJobsPostings(userId) {
     const jobs = await this.repository.getAllJobsPostedByUserId(userId);
+    if(!jobs) throw new NotFoundError("No jobs found");
     return jobs;
+  }
+
+  async getAllApplicantsDetails(job_id){
+
+    const applicants = await this.repository.getAllApplicantsDetails(job_id);
+
+    return {
+      message: "Applicants details fetched successfully",
+      applicants,
+    }
+  }
+
+
+
+
+
+
+
+
+
+  //Applicants functions
+
+
+  async Applicant_applyJob(jobId, userId) {
+
+    const job = this.repository.getJobById(jobId);
+
+    if (!job) throw new NotFoundError("Job not found");
+
+    if(job.validity_status!='open'){
+      throw new BadRequestError("Job is not open for applications");
+    }
+
+    const userDetails = await RPCService.request(USERS_RPC, {
+      type: RPC_TYPES.GET_APPLICANT_DETAILS,
+      data: {
+          userId: userId,
+            },
+    });
+
+    if (!userDetails) throw new NotFoundError("Applicant Details not found");
+
+    const email=userDetails.user.email;
+    const name=userDetails.profile.firstname + " " + userDetails.profile.lastname;
+    const resume=userDetails.profile.resumelink;
+
+    const result=this.repository.Applicant_applyJob(jobId, userId,email,name,resume);
+
+    if (!result) throw new InternalServerError("Failed to apply job");
+    
+
+    return {
+      message: "Job applied successfully",
+      result,
+    };
+  }
+
+  async Applicant_getAllMyJobApplications(user_id){
+
+    const applications = await this.repository.Applicant_getAllMyJobApplicationsByUserId(user_id);
   }
 
 }
 
-EventService.subscribe(SERVICE_QUEUE, Service);
-RPCService.respond(Service);
+// EventService.subscribe(SERVICE_QUEUE, Service);
+// RPCService.respond(Service);
 
 module.exports = Service;

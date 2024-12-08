@@ -5,13 +5,24 @@ const { BadRequestError } = require("../utils/errors");
 const router = express.Router();
 const service = new Service();
 const authMiddleware = require("../middlewares/auth");
+const { RPC_TYPES } = require("../config");
 
 router.get("/", (req, res) => {
-  res.json({ message: "Welcome to the users API" });
+  res.json({ message: "Welcome to the Jobs API" });
 });
 
 
-router.post("/createjob",authMiddleware,async (req, res) => {
+router.get("/getallopenjobs",authMiddleware, async (req, res) => {
+
+  const user_id=req.userId;
+  const data = await service.getAllOpenJobs();
+
+  return res.status(200).json(data);
+}
+);
+
+
+router.post("/recruter/createjob",authMiddleware,async (req, res) => {
     const {
       job_title,
       job_experience,
@@ -48,17 +59,17 @@ router.post("/createjob",authMiddleware,async (req, res) => {
 
 
   router.delete(
-    "/deletejob",
+    "/recruter/deletejob",
   authMiddleware,
     async (req, res) => {
       const { job_id } = req.body; // Get job_id from the body
-      await service.deleteJob(job_id);
-      return res.status(200).json({ message: "Job deleted successfully" });
+      const data = await service.deleteJob(job_id);
+      return res.status(200).json(data);
     }
   );
 
   router.put(
-    "/updatejob",
+    "/recruter/updatejob",
     authMiddleware,
     async (req, res) => {
       const { job_id, ...updateData } = req.body; // Get job_id and update data from the body
@@ -68,7 +79,7 @@ router.post("/createjob",authMiddleware,async (req, res) => {
   );
 
   router.get(
-    "/getAllMyPostedJobs",
+    "/recruter/getAllMyPostedJobs",
     authMiddleware,
     async (req, res) => {
       // const { user_id } = req.body; // Get user_id from the body
@@ -78,6 +89,45 @@ router.post("/createjob",authMiddleware,async (req, res) => {
     }
 
   );
+
+  router.post(
+    "/recruter/getAllApplcantsDetails",
+    authMiddleware,
+    async (req, res) => {
+      const user_id=req.userId;
+      const { job_id } = req.body;
+      const data = await service.getAllApplicantsDetails(job_id);
+      return res.status(200).json(data);
+    })
+
+
+
+
+
+
+
+    // Applicant Routes
+
+  router.post(
+    "/applicant/applyjob",
+    authMiddleware,
+    async (req, res) => {
+      const { job_id} = req.body;
+     const userId=req.userId; // Get job_id and user_id from the body
+      const jobId = job_id;
+      const data = await service.Applicant_applyJob(jobId, userId);
+      return res.status(200).json(data);
+    }
+  );
+
+  router.get("/applicant/getmyapplications",authMiddleware,async (req, res) => {
+    const user_id=req.userId;
+    const data = await service.Applicant_getAllMyJobApplications(user_id);
+    return res.status(200).json(data);
+  });
+
+
+  
 
 
 module.exports = router;
