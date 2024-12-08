@@ -20,22 +20,25 @@ class Service {
     this.repository = new Repository();
   }
 
-  async getAllOpenJobs(){
-
+  async getAllOpenJobs() {
     const jobs = await this.repository.getAllOpenJobs();
-    if(!jobs) throw new NotFoundError("No jobs found");
+    if (!jobs) throw new NotFoundError("No jobs found");
 
     return {
       message: "Jobs fetched successfully",
       jobs,
-    }
+    };
   }
 
-
+  async getJobById(jobId) {
+    const job = await this.repository.getJobById(jobId);
+    if (!job) throw new NotFoundError("Job not found");
+    return job;
+  }
 
   async createJob(jobData) {
-
     const job = await this.repository.createJob(jobData);
+    if (!job) throw new InternalServerError("Failed to create job");
     return {
       message: "Job created successfully",
       job,
@@ -67,58 +70,53 @@ class Service {
 
   async getAllMyJobsPostings(userId) {
     const jobs = await this.repository.getAllJobsPostedByUserId(userId);
-    if(!jobs) throw new NotFoundError("No jobs found");
+    if (!jobs) throw new NotFoundError("No jobs found");
     return jobs;
   }
 
-  async getAllApplicantsDetails(job_id){
-
+  async getAllApplicantsDetails(job_id) {
     const applicants = await this.repository.getAllApplicantsDetails(job_id);
 
     return {
       message: "Applicants details fetched successfully",
       applicants,
-    }
+    };
   }
-
-
-
-
-
-
-
-
 
   //Applicants functions
 
-
   async Applicant_applyJob(jobId, userId) {
-
     const job = this.repository.getJobById(jobId);
 
     if (!job) throw new NotFoundError("Job not found");
 
-    if(job.validity_status!='open'){
+    if (job.validity_status != "open") {
       throw new BadRequestError("Job is not open for applications");
     }
 
     const userDetails = await RPCService.request(USERS_RPC, {
       type: RPC_TYPES.GET_APPLICANT_DETAILS,
       data: {
-          userId: userId,
-            },
+        userId: userId,
+      },
     });
 
     if (!userDetails) throw new NotFoundError("Applicant Details not found");
 
-    const email=userDetails.user.email;
-    const name=userDetails.profile.firstname + " " + userDetails.profile.lastname;
-    const resume=userDetails.profile.resumelink;
+    const email = userDetails.user.email;
+    const name =
+      userDetails.profile.firstname + " " + userDetails.profile.lastname;
+    const resume = userDetails.profile.resumelink;
 
-    const result=this.repository.Applicant_applyJob(jobId, userId,email,name,resume);
+    const result = this.repository.Applicant_applyJob(
+      jobId,
+      userId,
+      email,
+      name,
+      resume
+    );
 
     if (!result) throw new InternalServerError("Failed to apply job");
-    
 
     return {
       message: "Job applied successfully",
@@ -126,11 +124,10 @@ class Service {
     };
   }
 
-  async Applicant_getAllMyJobApplications(user_id){
-
-    const applications = await this.repository.Applicant_getAllMyJobApplicationsByUserId(user_id);
+  async Applicant_getAllMyJobApplications(user_id) {
+    const applications =
+      await this.repository.Applicant_getAllMyJobApplicationsByUserId(user_id);
   }
-
 }
 
 // EventService.subscribe(SERVICE_QUEUE, Service);
