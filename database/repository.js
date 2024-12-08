@@ -28,6 +28,7 @@ class Repository {
     application_deadline,
   }) {
     const id = nanoid();
+
     const result = await DB.query({
       text: `
         INSERT INTO jobs 
