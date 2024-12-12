@@ -7,7 +7,6 @@ class RPCService {
    * Request a data from a service
    * @param {string} service_rpc - The service rpc to request data from
    * @param {object} request_payload - The request payload
-   * @param {number} timeout - The request timeout in seconds (default is 10 seconds)
    * @returns {Promise} - A promise that resolves when the request is successful
    * @throws {Error} - If request fails
    * @example
@@ -18,7 +17,7 @@ class RPCService {
    *    },
    * });
    */
-  static async request(service_rpc, request_payload, timeout = 10) {
+  static async request(service_rpc, request_payload) {
     try {
       const id = nanoid();
       const channel = await Broker.connect();
@@ -34,25 +33,38 @@ class RPCService {
       );
 
       return new Promise((resolve, reject) => {
-        const rpcTimeout = setTimeout(() => {
-          reject("Unable to get data");
-        }, timeout * 1000);
+        const timeout = setTimeout(async () => {
+          try {
+            await channel.deleteQueue(queue.queue);
+            reject("Request timed out");
+          } catch (err) {
+            console.error(`Failed to delete queue: ${err.message}`);
+            reject("Request timed out with cleanup error");
+          }
+        }, 10000);
 
-        channel.consume(
+        const consumerTagPromise = channel.consume(
           queue.queue,
-          (data) => {
+          async (data) => {
             if (data.properties.correlationId === id) {
+              clearTimeout(timeout);
               resolve(JSON.parse(data.content.toString()));
-              clearTimeout(rpcTimeout);
-            } else {
-              reject("Data not found");
+              await channel.cancel(data.fields.consumerTag);
+              await channel.deleteQueue(queue.queue);
             }
           },
           { noAck: true }
         );
+
+        consumerTagPromise.catch((err) => {
+          clearTimeout(timeout);
+          console.error(`Failed to consume queue: ${err.message}`);
+          reject("Consumer setup failed");
+        });
       });
     } catch (err) {
-      console.log("Failed to request data");
+      console.error("Failed to request data:", err);
+      throw err;
     }
   }
 
