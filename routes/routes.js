@@ -24,7 +24,7 @@ router.get("/getallopenjobs", authMiddleware, async (req, res) => {
   return res.status(200).json(data);
 });
 
-router.post("/recruter/createjob", authMiddleware, async (req, res) => {
+router.post("/recruiter/createjob", authMiddleware, async (req, res) => {
   const {
     job_title,
     job_experience,
@@ -59,19 +59,19 @@ router.post("/recruter/createjob", authMiddleware, async (req, res) => {
   return res.status(201).json(data);
 });
 
-router.delete("/recruter/deletejob", authMiddleware, async (req, res) => {
+router.delete("/recruiter/deletejob", authMiddleware, async (req, res) => {
   const { job_id } = req.body; // Get job_id from the body
   const data = await service.deleteJob(job_id);
   return res.status(200).json(data);
 });
 
-router.put("/recruter/updatejob", authMiddleware, async (req, res) => {
+router.put("/recruiter/updatejob", authMiddleware, async (req, res) => {
   const { job_id, ...updateData } = req.body; // Get job_id and update data from the body
   const data = await service.updateJob(job_id, updateData);
   return res.status(200).json(data);
 });
 
-router.get("/recruter/getAllMyPostedJobs", authMiddleware, async (req, res) => {
+router.get("/recruiter/getAllMyPostedJobs", authMiddleware, async (req, res) => {
   // const { user_id } = req.body; // Get user_id from the body
   const user_id = req.userId;
   const data = await service.getAllMyJobsPostings(user_id);
@@ -79,7 +79,7 @@ router.get("/recruter/getAllMyPostedJobs", authMiddleware, async (req, res) => {
 });
 
 router.post(
-  "/recruter/getAllApplcantsDetails",
+  "/recruiter/getAllApplcantsDetails",
   authMiddleware,
   async (req, res) => {
     const user_id = req.userId;
