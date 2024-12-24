@@ -110,7 +110,7 @@ class Service {
       userDetails.profile.firstname + " " + userDetails.profile.lastname;
     const resume = userDetails.profile.resumelink;
 
-    const result = this.repository.Applicant_applyJob(
+    const result = await this.repository.Applicant_applyJob(
       jobId,
       userId,
       email,
