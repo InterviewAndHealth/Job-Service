@@ -90,6 +90,8 @@ class Service {
 
     if (!job) throw new NotFoundError("Job not found");
 
+    console.log(job);
+
     if (job.validity_status != "open") {
       throw new BadRequestError("Job is not open for applications");
     }
