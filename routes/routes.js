@@ -79,7 +79,7 @@ router.get("/recruiter/getAllMyPostedJobs", authMiddleware, async (req, res) => 
 });
 
 router.post(
-  "/recruiter/getAllApplcantsDetails",
+  "/recruiter/getAllApplicantsDetails",
   authMiddleware,
   async (req, res) => {
     const user_id = req.userId;
