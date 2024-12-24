@@ -88,11 +88,12 @@ class Service {
   async Applicant_applyJob(jobId, userId) {
     const job = await this.repository.getJobById(jobId);
 
+    console.log(job);
     if (!job) throw new NotFoundError("Job not found");
 
-    console.log(job);
+    console.log(job.validity_status);
 
-    if (job.validity_status != "open") {
+    if (job.validity_status != 'open') {
       throw new BadRequestError("Job is not open for applications");
     }
 
@@ -103,6 +104,7 @@ class Service {
       },
     });
 
+    console.log(userDetails);
     if (!userDetails) throw new NotFoundError("Applicant Details not found");
 
     const email = userDetails.user.email;
@@ -117,6 +119,8 @@ class Service {
       name,
       resume
     );
+
+    console.log(result);
 
     if (!result) throw new InternalServerError("Failed to apply job");
 
