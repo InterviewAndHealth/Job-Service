@@ -11,6 +11,8 @@ const {
   EVENT_TYPES,
   TEST_QUEUE,
   TEST_RPC,
+  USERS_QUEUE,
+  USERS_RPC
 } = require("../config");
 const { RPC_TYPES } = require("../config");
 
@@ -88,10 +90,10 @@ class Service {
   async Applicant_applyJob(jobId, userId) {
     const job = await this.repository.getJobById(jobId);
 
-    console.log(job);
+    // console.log(job);
     if (!job) throw new NotFoundError("Job not found");
 
-    console.log(job.validity_status);
+    // console.log(job.validity_status);
 
     if (job.validity_status != 'open') {
       throw new BadRequestError("Job is not open for applications");
@@ -104,7 +106,7 @@ class Service {
       },
     });
 
-    console.log(userDetails);
+    // console.log(userDetails);
     if (!userDetails) throw new NotFoundError("Applicant Details not found");
 
     const email = userDetails.user.email;
@@ -120,7 +122,7 @@ class Service {
       resume
     );
 
-    console.log(result);
+    // console.log(result);
 
     if (!result) throw new InternalServerError("Failed to apply job");
 

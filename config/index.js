@@ -31,6 +31,8 @@ module.exports = {
 
   TEST_QUEUE: process.env.TEST_QUEUE,
   TEST_RPC: process.env.TEST_RPC,
+  USERS_QUEUE: process.env.USER_QUEUE,
+  USERS_RPC: process.env.USER_RPC,
   EVENT_TYPES,
   RPC_TYPES,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,

@@ -206,12 +206,6 @@ class Repository {
 
   async Applicant_applyJob(jobId, userId,name,email,resume) {
     const id=nanoid();
-    console.log(id);
-    console.log(jobId);
-    console.log(userId);
-    console.log(name);
-    console.log(email);
-    console.log(resume);
     const result = await DB.query({
       text: "INSERT INTO applications (application_id,job_id, applicant_user_id,applicant_name,applicant_email,resume_link) VALUES ($1, $2, $3,$4,$5,$6) RETURNING *",
       values: [id,jobId, userId,name,email,resume],
