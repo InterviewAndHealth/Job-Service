@@ -22,9 +22,9 @@ module.exports = async (req, res, next) => {
       throw new UnauthorizedError("Invalid user");
     }
 
-    if (decodedToken.role !== "recruiter") {
-      throw new Error("Invalid role");
-    }
+    // if (decodedToken.role !== "recruiter") {
+    //   throw new Error("Invalid role");
+    // }
 
     next();
   } catch (error) {
