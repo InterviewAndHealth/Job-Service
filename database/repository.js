@@ -50,43 +50,112 @@ class Repository {
     return result.rows;
   }
 
-  async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, salaryMin, requiredSkills) {
+//   async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, salaryMin, requiredSkills) {
 
-    const result = await DB.query({
-            text: `
-              SELECT 
-                  *
-              FROM 
-                  jobs
-              WHERE 
-                  validity_status = 'open' 
-                  AND($1::TEXT IS NULL OR LOWER(job_title) LIKE '%' || LOWER($1::TEXT) || '%') 
-                  AND ($2::TEXT IS NULL OR LOWER(job_experience) LIKE '%' || LOWER($2::TEXT) || '%') 
-                  AND ($3::TEXT[] IS NULL OR EXISTS (
-                      SELECT 1 FROM UNNEST(job_location) loc WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($3::TEXT[]) val))
-                  )) 
-                  AND ($4::JOB_TYPE IS NULL OR job_type = $4::JOB_TYPE) 
-                  AND ($5::WORK_TYPE IS NULL OR work_type = $5::WORK_TYPE) 
-                  AND ($6::VARCHAR IS NULL OR CAST(salary_min AS NUMERIC) >= CAST($6 AS NUMERIC)) 
-                  AND ($7::TEXT[] IS NULL OR EXISTS (
-                      SELECT 1 FROM UNNEST(required_skills) skill WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($7::TEXT[]) val))
-                  )) 
-              ORDER BY created_at DESC
-            `,
-            values: [
-              jobTitle,             // $1: Filter for job title
-              jobExperience,        // $2: Filter for job experience
-              jobLocations,         // $3: Array of locations to match
-              jobType,              // $4: Job type filter
-              workType,             // $5: Work type filter
-              salaryMin,            // $6: Minimum salary filter
-              requiredSkills        // $7: Array of skills to match
-            ],    
-        });
+//     const result = await DB.query({
+//             text: `
+//               SELECT 
+//                   *
+//               FROM 
+//                   jobs
+//               WHERE 
+//                   validity_status = 'open' 
+//                   AND($1::TEXT IS NULL OR LOWER(job_title) LIKE '%' || LOWER($1::TEXT) || '%') 
+//                   AND ($2::TEXT IS NULL OR LOWER(job_experience) LIKE '%' || LOWER($2::TEXT) || '%') 
+//                   AND ($3::TEXT[] IS NULL OR EXISTS (
+//                       SELECT 1 FROM UNNEST(job_location) loc WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($3::TEXT[]) val))
+//                   )) 
+//                   AND ($4::JOB_TYPE IS NULL OR job_type = $4::JOB_TYPE) 
+//                   AND ($5::WORK_TYPE IS NULL OR work_type = $5::WORK_TYPE) 
+//                   AND ($6::VARCHAR IS NULL OR CAST(salary_min AS NUMERIC) >= CAST($6 AS NUMERIC)) 
+//                   AND ($7::TEXT[] IS NULL OR EXISTS (
+//                       SELECT 1 FROM UNNEST(required_skills) skill WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($7::TEXT[]) val))
+//                   )) 
+//               ORDER BY created_at DESC
+//             `,
+//             values: [
+//               jobTitle,             // $1: Filter for job title
+//               jobExperience,        // $2: Filter for job experience
+//               jobLocations,         // $3: Array of locations to match
+//               jobType,              // $4: Job type filter
+//               workType,             // $5: Work type filter
+//               salaryMin,            // $6: Minimum salary filter
+//               requiredSkills        // $7: Array of skills to match
+//             ],    
+//         });
 
-return result.rows;
+// return result.rows;
     
+//   }
+
+async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, salaryMin, requiredSkills) {
+  const filters = [];
+  const values = [];
+
+  // Build filters dynamically
+  if (jobTitle) {
+    filters.push("LOWER(job_title) LIKE '%' || LOWER($1) || '%'");
+    values.push(jobTitle);
   }
+  if (jobExperience) {
+    filters.push("LOWER(job_experience) LIKE '%' || LOWER($2) || '%'");
+    values.push(jobExperience);
+  }
+  if (jobLocations) {
+    filters.push(`
+      EXISTS (
+        SELECT 1 FROM UNNEST(job_location) loc 
+        WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($3::TEXT[]) val))
+      )
+    `);
+    values.push(jobLocations);
+  }
+  if (jobType) {
+    filters.push("job_type = $4");
+    values.push(jobType);
+  }
+  if (workType) {
+    filters.push("work_type = $5");
+    values.push(workType);
+  }
+  if (salaryMin) {
+    filters.push("CAST(salary_min AS NUMERIC) >= CAST($6 AS NUMERIC)");
+    values.push(salaryMin);
+  }
+  if (requiredSkills) {
+    filters.push(`
+      EXISTS (
+        SELECT 1 FROM UNNEST(required_skills) skill 
+        WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($7::TEXT[]) val))
+      )
+    `);
+    values.push(requiredSkills);
+  }
+
+  // Base query
+  let queryText = `
+    SELECT *
+    FROM jobs
+    WHERE validity_status = 'open'
+  `;
+
+  // Append filters if any
+  if (filters.length > 0) {
+    queryText += ` AND ${filters.join(" AND ")}`;
+  }
+
+  // Order by creation date
+  queryText += " ORDER BY created_at DESC";
+
+  // Execute query
+  const result = await DB.query({
+    text: queryText,
+    values,
+  });
+
+  return result.rows;
+}
+
 
   async createJob({
     user_id,
