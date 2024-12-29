@@ -22,8 +22,8 @@ class Service {
     this.repository = new Repository();
   }
 
-  async getAllOpenJobs() {
-    const jobs = await this.repository.getAllOpenJobs();
+  async getAllOpenJobs(user_id) {
+    const jobs = await this.repository.getAllOpenJobs(user_id);
     if (!jobs) throw new NotFoundError("No jobs found");
 
     return {
@@ -31,6 +31,29 @@ class Service {
       jobs,
     };
   }
+
+  async getFilteredJobs(jobTitle,             
+    jobExperience,    
+    jobLocations,
+    jobType,
+    workType,
+    salaryMin, 
+    requiredSkills ){
+      const jobs=await this.repository.getFilteredJobs(jobTitle,
+        jobExperience,
+        jobLocations,
+        jobType,
+        workType,
+        salaryMin,
+        requiredSkills
+        );
+        if (!jobs) throw new NotFoundError("No jobs found");
+        return {
+          message: "Jobs fetched successfully",
+          jobs,
+        };
+
+    }
 
   async getJobById(jobId) {
     const job = await this.repository.getJobById(jobId);
@@ -135,6 +158,58 @@ class Service {
   async Applicant_getAllMyJobApplications(user_id) {
     const applications =
       await this.repository.Applicant_getAllMyJobApplicationsByUserId(user_id);
+      return {
+        message: "Applications fetched successfully",
+        applications,
+      }
+  }
+
+
+  async getApplicationsByJobId(job_id){
+    const applications=await this.repository.getApplicationsByJobId(job_id);
+
+    if (!applications) throw new NotFoundError("No applications found");
+
+    const ApplicantDetails = await RPCService.request(USERS_RPC, {
+      type: RPC_TYPES.GET_APPLICANT_RESUMES,
+      data: {
+        applications: applications,
+      },
+    });
+
+
+
+    return {
+      message: "Applications fetched successfully",
+      ApplicantDetails,
+    }
+  }
+
+
+
+  async updateApplications(updates){
+
+    const results = await Promise.all(
+      updates.map(async (update) => {
+        const { application_id, ...updateData } = update;
+  
+        if (!application_id) {
+          throw new Error("Missing application_id in update object.");
+        }
+  
+        const application = await this.repository.getApplicationById(application_id);
+        if (!application) throw new NotFoundError(`Application with ID ${application_id} not found`);
+  
+        const updatedApplication = await this.repository.updateApplication(application_id, updateData);
+        return updatedApplication;
+      })
+    );
+  
+    return {
+      message: "Applications updated successfully",
+      results
+    };
+
   }
 }
 

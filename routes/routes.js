@@ -19,10 +19,31 @@ router.get("/getjobbyid", authMiddleware, async (req, res) => {
 
 router.get("/getallopenjobs", authMiddleware, async (req, res) => {
   const user_id = req.userId;
-  const data = await service.getAllOpenJobs();
+  const data = await service.getAllOpenJobs(user_id);
 
   return res.status(200).json(data);
 });
+
+router.post("/getfilteredjobs",authMiddleware,async(req,res)=>{
+  const {
+    jobTitle,             
+    jobExperience,    
+    jobLocations,
+    jobType,
+    workType,
+    salaryMin, 
+    requiredSkills 
+    } =req.body;
+  const data = await service.getFilteredJobs(jobTitle,             
+    jobExperience,    
+    jobLocations,
+    jobType,
+    workType,
+    salaryMin, 
+    requiredSkills );
+});
+
+
 
 router.post("/recruiter/createjob", authMiddleware, async (req, res) => {
   const {
@@ -104,5 +125,25 @@ router.get("/applicant/getmyapplications", authMiddleware, async (req, res) => {
   const data = await service.Applicant_getAllMyJobApplications(user_id);
   return res.status(200).json(data);
 });
+
+
+router.post("/recommendation/getapplicationsbyjobid",async(req,res)=>{
+  const {job_id} = req.body;
+  const data = await service.getApplicationsByJobId(job_id);
+  return res.status(200).json(data);
+})
+
+router.put("/recommendation/updateapplicationsbyapplicationid",async(req,res)=>{
+  const updates = req.body; // Array of updates
+    if (!Array.isArray(updates)) {
+      return res.status(400).json({ error: "Request body must be an array of updates." });
+    }
+
+    const data = await service.updateApplications(updates);
+    return res.status(200).json(data);
+})
+
+
+
 
 module.exports = router;

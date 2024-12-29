@@ -6,11 +6,86 @@ const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 12);
 // Repository will be used to interact with the database
 class Repository {
   
-  async getAllOpenJobs(){
+  // async getAllOpenJobs(){
+  //   const result = await DB.query({
+  //     text: "SELECT * FROM jobs WHERE validity_status = 'open'",
+  //   });
+  //   return result.rows;
+  // }
+
+  async getAllOpenJobs(user_id){
     const result = await DB.query({
-      text: "SELECT * FROM jobs WHERE validity_status = 'open'",
+      text: `
+        SELECT 
+            j.job_id,
+            j.job_title,
+            j.job_experience,
+            j.job_location,
+            j.job_type,
+            j.work_type,
+            j.salary_min,
+            j.salary_max,
+            j.job_description,
+            j.required_skills,
+            j.application_deadline,
+            j.validity_status,
+            j.created_at,
+            j.updated_at,
+            CASE 
+                WHEN a.application_id IS NOT NULL THEN 'applied'
+                ELSE 'not_applied'
+            END AS application_status
+        FROM 
+            jobs j
+        LEFT JOIN 
+            applications a 
+        ON 
+            j.job_id = a.job_id AND a.applicant_user_id = $1
+        WHERE 
+            j.validity_status = 'open'
+      `,
+      values: [user_id], // Replace user_id with the variable containing the user's ID
     });
+    
     return result.rows;
+  }
+
+  async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, salaryMin, requiredSkills) {
+
+    const result = await DB.query({
+            text: `
+              SELECT 
+                  *
+              FROM 
+                  jobs
+              WHERE 
+                  validity_status = 'open' 
+                  AND($1::TEXT IS NULL OR LOWER(job_title) LIKE '%' || LOWER($1::TEXT) || '%') 
+                  AND ($2::TEXT IS NULL OR LOWER(job_experience) LIKE '%' || LOWER($2::TEXT) || '%') 
+                  AND ($3::TEXT[] IS NULL OR EXISTS (
+                      SELECT 1 FROM UNNEST(job_location) loc WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($3::TEXT[]) val))
+                  )) 
+                  AND ($4::JOB_TYPE IS NULL OR job_type = $4::JOB_TYPE) 
+                  AND ($5::WORK_TYPE IS NULL OR work_type = $5::WORK_TYPE) 
+                  AND ($6::VARCHAR IS NULL OR CAST(salary_min AS NUMERIC) >= CAST($6 AS NUMERIC)) 
+                  AND ($7::TEXT[] IS NULL OR EXISTS (
+                      SELECT 1 FROM UNNEST(required_skills) skill WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($7::TEXT[]) val))
+                  )) 
+              ORDER BY created_at DESC
+            `,
+            values: [
+              jobTitle,             // $1: Filter for job title
+              jobExperience,        // $2: Filter for job experience
+              jobLocations,         // $3: Array of locations to match
+              jobType,              // $4: Job type filter
+              workType,             // $5: Work type filter
+              salaryMin,            // $6: Minimum salary filter
+              requiredSkills        // $7: Array of skills to match
+            ],    
+        });
+
+return result.rows;
+    
   }
 
   async createJob({
@@ -224,9 +299,102 @@ class Repository {
    }
 
 
+   async getApplicationsByJobId(job_id) {
+    const result = await DB.query({
+      text: "SELECT * FROM applications WHERE job_id = $1",
+      values: [job_id],
+    });
+    return result.rows;
+   }
+
+
+   async getApplicationById(applicationId) {
+    const queryText = `SELECT * FROM applications WHERE application_id = $1`;
+    const result = await DB.query({
+      text: queryText,
+      values: [applicationId],
+    });
+    return result.rows[0];
+  }
+  
+  async updateApplication(applicationId, updateData) {
+    const fields = Object.keys(updateData);
+    const values = Object.values(updateData);
+  
+    const setClause = fields.map((field, index) => `${field} = $${index + 2}`).join(', ');
+    const queryText = `
+      UPDATE applications 
+      SET ${setClause}, updated_at = CURRENT_TIMESTAMP 
+      WHERE application_id = $1 
+      RETURNING *`;
+  
+    const result = await DB.query({
+      text: queryText,
+      values: [applicationId, ...values],
+    });
+  
+    return result.rows[0];
+  }
 
 
   
 }
 
 module.exports = Repository;
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// const result = await DB.query({
+//   text: `
+//     SELECT 
+//         *
+//     FROM 
+//         jobs
+//     WHERE 
+//         validity_status = 'open' -- Ensure only open jobs are returned
+//         AND($1::TEXT IS NULL OR LOWER(job_title) LIKE '%' || LOWER($1::TEXT) || '%') -- Match job title (case-insensitive)
+//         AND ($2::TEXT IS NULL OR LOWER(job_experience) LIKE '%' || LOWER($2::TEXT) || '%') -- Match job experience (case-insensitive)
+//         AND ($3::TEXT[] IS NULL OR EXISTS (
+//             SELECT 1 FROM UNNEST(job_location) loc WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($3::TEXT[]) val))
+//         )) -- Match job location
+//         AND ($4::JOB_TYPE IS NULL OR job_type = $4::JOB_TYPE) -- Match job type
+//         AND ($5::WORK_TYPE IS NULL OR work_type = $5::WORK_TYPE) -- Match work type
+//         AND ($6::VARCHAR IS NULL OR CAST(salary_min AS NUMERIC) >= CAST($6 AS NUMERIC)) -- Match salary minimum
+//         AND ($7::TEXT[] IS NULL OR EXISTS (
+//             SELECT 1 FROM UNNEST(required_skills) skill WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($7::TEXT[]) val))
+//         )) -- Match required skills
+//     ORDER BY created_at DESC
+//   `,
+//   values: [
+//     jobTitle,             // $1: Filter for job title
+//     jobExperience,        // $2: Filter for job experience
+//     jobLocations,         // $3: Array of locations to match
+//     jobType,              // $4: Job type filter
+//     workType,             // $5: Work type filter
+//     salaryMin,            // $6: Minimum salary filter
+//     requiredSkills        // $7: Array of skills to match
+//   ],
+// });
