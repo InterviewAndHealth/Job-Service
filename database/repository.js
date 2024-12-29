@@ -32,8 +32,8 @@ class Repository {
             j.created_at,
             j.updated_at,
             CASE 
-                WHEN a.application_id IS NOT NULL THEN 'applied'
-                ELSE 'not_applied'
+                WHEN a.application_id IS NOT NULL THEN 'Applied'
+                ELSE 'Not Applied'
             END AS application_status
         FROM 
             jobs j
@@ -226,8 +226,8 @@ async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, 
     j.created_at,
     j.updated_at,
     CASE 
-        WHEN a.application_id IS NOT NULL THEN 'applied'
-        ELSE 'not_applied'
+        WHEN a.application_id IS NOT NULL THEN 'Applied'
+        ELSE 'Not Applied'
     END AS application_status
 FROM 
     jobs j

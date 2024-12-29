@@ -110,8 +110,8 @@ class Service {
 
   //Applicants functions
 
-  async Applicant_applyJob(jobId, userId) {
-    const job = await this.repository.getJobById(jobId);
+  async Applicant_applyJob(job_id,user_id) {
+    const job = await this.repository.getJobById(user_id,job_id);
 
     // console.log(job);
     if (!job) throw new NotFoundError("Job not found");

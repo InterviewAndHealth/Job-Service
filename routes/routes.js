@@ -117,9 +117,9 @@ router.post(
 
 router.post("/applicant/applyjob", authMiddleware, async (req, res) => {
   const { job_id } = req.body;
-  const userId = req.userId; // Get job_id and user_id from the body
-  const jobId = job_id;
-  const data = await service.Applicant_applyJob(jobId, userId);
+  const user_id = req.userId; // Get job_id and user_id from the body
+  // const jobId = job_id;
+  const data = await service.Applicant_applyJob(job_id, user_id);
   return res.status(200).json(data);
 });
 
