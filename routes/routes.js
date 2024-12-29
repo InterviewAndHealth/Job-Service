@@ -13,7 +13,8 @@ router.get("/", (req, res) => {
 
 router.get("/getjobbyid", authMiddleware, async (req, res) => {
   const { job_id } = req.query; // Get job_id from the query params
-  const data = await service.getJobById(job_id);
+  const user_id = req.userId;
+  const data = await service.getJobById(user_id,job_id);
   return res.status(200).json(data);
 });
 

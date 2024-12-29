@@ -200,10 +200,46 @@ async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, 
   }
 
 
-  async getJobById(jobId) {
+  // async getJobById(jobId) {
+  //   const result = await DB.query({
+  //     text: "SELECT * FROM jobs WHERE job_id = $1",
+  //     values: [jobId],
+  //   });
+  //   return result.rows[0];
+  // }
+
+  async getJobById(user_id,job_id) {
     const result = await DB.query({
-      text: "SELECT * FROM jobs WHERE job_id = $1",
-      values: [jobId],
+      text: `SELECT 
+    j.job_id,
+    j.job_title,
+    j.job_experience,
+    j.job_location,
+    j.job_type,
+    j.work_type,
+    j.salary_min,
+    j.salary_max,
+    j.job_description,
+    j.required_skills,
+    j.application_deadline,
+    j.validity_status,
+    j.created_at,
+    j.updated_at,
+    CASE 
+        WHEN a.application_id IS NOT NULL THEN 'applied'
+        ELSE 'not_applied'
+    END AS application_status
+FROM 
+    jobs j
+LEFT JOIN 
+    applications a 
+ON 
+    j.job_id = a.job_id AND a.applicant_user_id = $1
+WHERE 
+    j.validity_status = 'open' 
+    AND j.job_id = $2;
+`,
+      values: [user_id,job_id],
     });
     return result.rows[0];
   }

@@ -55,8 +55,8 @@ class Service {
 
     }
 
-  async getJobById(jobId) {
-    const job = await this.repository.getJobById(jobId);
+  async getJobById(user_id,job_id) {
+    const job = await this.repository.getJobById(user_id,job_id);
     if (!job) throw new NotFoundError("Job not found");
     return job;
   }
