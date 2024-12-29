@@ -41,6 +41,8 @@ router.post("/getfilteredjobs",authMiddleware,async(req,res)=>{
     workType,
     salaryMin, 
     requiredSkills );
+
+  return res.status(200).json(data);
 });
 
 
