@@ -125,7 +125,7 @@ class Service {
     const userDetails = await RPCService.request(USERS_RPC, {
       type: RPC_TYPES.GET_APPLICANT_DETAILS,
       data: {
-        userId: userId,
+        userId: user_id,
       },
     });
 
@@ -138,8 +138,8 @@ class Service {
     const resume = userDetails.profile.resumelink;
 
     const result = await this.repository.Applicant_applyJob(
-      jobId,
-      userId,
+      job_id,
+      user_id,
       email,
       name,
       resume

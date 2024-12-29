@@ -384,11 +384,11 @@ WHERE
   //Applicants functions
 
 
-  async Applicant_applyJob(jobId, userId,name,email,resume) {
+  async Applicant_applyJob(job_id, user_id,name,email,resume) {
     const id=nanoid();
     const result = await DB.query({
       text: "INSERT INTO applications (application_id,job_id, applicant_user_id,applicant_name,applicant_email,resume_link) VALUES ($1, $2, $3,$4,$5,$6) RETURNING *",
-      values: [id,jobId, userId,name,email,resume],
+      values: [id,job_id, user_id,name,email,resume],
     });
     return result.rows[0];
   }
