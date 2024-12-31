@@ -91,45 +91,53 @@ class Repository {
 async getFilteredJobs(jobTitle, jobExperience, jobLocations, jobType, workType, salaryMin, requiredSkills) {
   const filters = [];
   const values = [];
+  let index = 1; // Dynamic index for query placeholders
 
   // Build filters dynamically
   if (jobTitle) {
-    filters.push("LOWER(job_title) LIKE '%' || LOWER($1) || '%'");
+    filters.push(`LOWER(job_title) LIKE '%' || LOWER($${index}) || '%'`);
     values.push(jobTitle);
+    index++;
   }
   if (jobExperience) {
-    filters.push("LOWER(job_experience) LIKE '%' || LOWER($2) || '%'");
+    filters.push(`LOWER(job_experience) LIKE '%' || LOWER($${index}) || '%'`);
     values.push(jobExperience);
+    index++;
   }
   if (jobLocations) {
     filters.push(`
       EXISTS (
         SELECT 1 FROM UNNEST(job_location) loc 
-        WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($3::TEXT[]) val))
+        WHERE LOWER(loc) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($${index}::TEXT[]) val))
       )
     `);
     values.push(jobLocations);
+    index++;
   }
   if (jobType) {
-    filters.push("job_type = $4");
+    filters.push(`job_type = $${index}`);
     values.push(jobType);
+    index++;
   }
   if (workType) {
-    filters.push("work_type = $5");
+    filters.push(`work_type = $${index}`);
     values.push(workType);
+    index++;
   }
   if (salaryMin) {
-    filters.push("CAST(salary_min AS NUMERIC) >= CAST($6 AS NUMERIC)");
+    filters.push(`CAST(salary_min AS NUMERIC) >= CAST($${index} AS NUMERIC)`);
     values.push(salaryMin);
+    index++;
   }
   if (requiredSkills) {
     filters.push(`
       EXISTS (
         SELECT 1 FROM UNNEST(required_skills) skill 
-        WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($7::TEXT[]) val))
+        WHERE LOWER(skill) = ANY(ARRAY(SELECT LOWER(val) FROM UNNEST($${index}::TEXT[]) val))
       )
     `);
     values.push(requiredSkills);
+    index++;
   }
 
   // Base query
