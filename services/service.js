@@ -32,14 +32,18 @@ class Service {
     };
   }
 
-  async getFilteredJobs(jobTitle,             
+  async getFilteredJobs(
+    userId,
+    jobTitle,             
     jobExperience,    
     jobLocations,
     jobType,
     workType,
     salaryMin, 
     requiredSkills ){
-      const jobs=await this.repository.getFilteredJobs(jobTitle,
+      const jobs=await this.repository.getFilteredJobs(
+        userId,
+        jobTitle,
         jobExperience,
         jobLocations,
         jobType,

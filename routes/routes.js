@@ -35,7 +35,10 @@ router.post("/getfilteredjobs",authMiddleware,async(req,res)=>{
     salaryMin, 
     requiredSkills 
     } =req.body;
-  const data = await service.getFilteredJobs(jobTitle,             
+    const userId = req.userId;
+  const data = await service.getFilteredJobs(
+    userId,
+    jobTitle,             
     jobExperience,    
     jobLocations,
     jobType,
