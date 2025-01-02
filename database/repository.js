@@ -317,6 +317,15 @@ WHERE
     return result.rows[0];
   }
 
+
+  async getJobByJobId(job_id){
+    const result = await DB.query({
+      text: "SELECT * FROM jobs WHERE job_id = $1",
+      values: [job_id],
+    });
+    return result.rows[0];
+  }
+
   async deleteJob(job_id) {
     await DB.query({
       text: "DELETE FROM jobs WHERE job_id = $1",

@@ -88,8 +88,8 @@ router.post("/recruiter/createjob", authMiddleware, async (req, res) => {
 
 router.delete("/recruiter/deletejob", authMiddleware, async (req, res) => {
   const { job_id } = req.body; // Get job_id from the body
-  const user_id = req.userId;
-  const data = await service.deleteJob(job_id, user_id);
+  // const user_id = req.userId;
+  const data = await service.deleteJob(job_id);
   return res.status(200).json(data);
 });
 
