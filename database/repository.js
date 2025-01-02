@@ -317,10 +317,10 @@ WHERE
     return result.rows[0];
   }
 
-  async deleteJob(jobId) {
+  async deleteJob(job_id) {
     await DB.query({
       text: "DELETE FROM jobs WHERE job_id = $1",
-      values: [jobId],
+      values: [job_id],
     });
   }
 

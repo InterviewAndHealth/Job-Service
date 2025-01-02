@@ -74,11 +74,11 @@ class Service {
     };
   }
 
-  async deleteJob(jobId) {
-    const job = await this.repository.getJobById(jobId);
+  async deleteJob(job_id,user_id) {
+    const job = await this.repository.getJobById(job_id,user_id);
     if (!job) throw new NotFoundError("Job not found");
 
-    await this.repository.deleteJob(jobId);
+    await this.repository.deleteJob(job_id);
 
     return {
       message: "Job deleted successfully",
