@@ -85,11 +85,11 @@ class Service {
     };
   }
 
-  async updateJob(jobId, updateData) {
-    const job = await this.repository.getJobById(jobId);
+  async updateJob(job_id, updateData) {
+    const job = await this.repository.getJobByJobId(job_id);
     if (!job) throw new NotFoundError("Job not found");
 
-    const updatedJob = await this.repository.updateJob(jobId, updateData);
+    const updatedJob = await this.repository.updateJob(job_id, updateData);
     if (!updatedJob) throw new InternalServerError("Failed to update job");
     return {
       message: "Job updated successfully",

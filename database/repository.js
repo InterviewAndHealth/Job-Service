@@ -334,7 +334,7 @@ WHERE
   }
 
 
-  async updateJob(jobId, updateData) {
+  async updateJob(job_id, updateData) {
     const fields = Object.keys(updateData);
     const values = Object.values(updateData);
 
@@ -343,7 +343,7 @@ WHERE
 
     const result = await DB.query({
       text: queryText,
-      values: [jobId, ...values],
+      values: [job_id, ...values],
     });
 
     return result.rows[0];
