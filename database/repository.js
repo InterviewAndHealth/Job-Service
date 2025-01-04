@@ -135,7 +135,8 @@ async getFilteredJobs(
   jobType,
   workType,
   salaryMin,
-  requiredSkills
+  requiredSkills,
+  jobKeywords
 ) {
   const filters = [];
   const values = [userId]; // Include userId as the first parameter
@@ -178,6 +179,18 @@ async getFilteredJobs(
       )
     `);
     values.push(requiredSkills);
+  }
+  if (jobKeywords) {
+    filters.push(`
+      (
+        LOWER(j.job_title) LIKE ANY(ARRAY(SELECT '%' || LOWER(keyword) || '%' FROM UNNEST($${values.length + 1}::TEXT[]) keyword)) 
+        OR EXISTS (
+          SELECT 1 FROM UNNEST(j.required_skills) skill 
+          WHERE LOWER(skill) LIKE ANY(ARRAY(SELECT '%' || LOWER(keyword) || '%' FROM UNNEST($${values.length + 1}::TEXT[]) keyword))
+        )
+      )
+    `);
+    values.push(jobKeywords);
   }
 
   // Base query

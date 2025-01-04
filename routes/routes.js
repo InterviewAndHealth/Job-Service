@@ -33,7 +33,8 @@ router.post("/getfilteredjobs",authMiddleware,async(req,res)=>{
     jobType,
     workType,
     salaryMin, 
-    requiredSkills 
+    requiredSkills,
+    jobKeywords
     } =req.body;
     const userId = req.userId;
   const data = await service.getFilteredJobs(
@@ -44,7 +45,8 @@ router.post("/getfilteredjobs",authMiddleware,async(req,res)=>{
     jobType,
     workType,
     salaryMin, 
-    requiredSkills );
+    requiredSkills,
+    jobKeywords);
 
   return res.status(200).json(data);
 });

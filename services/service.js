@@ -40,7 +40,8 @@ class Service {
     jobType,
     workType,
     salaryMin, 
-    requiredSkills ){
+    requiredSkills,
+    jobKeywords) {
       const jobs=await this.repository.getFilteredJobs(
         userId,
         jobTitle,
@@ -49,7 +50,8 @@ class Service {
         jobType,
         workType,
         salaryMin,
-        requiredSkills
+        requiredSkills,
+        jobKeywords
         );
         if (!jobs) throw new NotFoundError("No jobs found");
         return {
