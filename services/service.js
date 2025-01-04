@@ -126,6 +126,10 @@ class Service {
       throw new BadRequestError("Job is not open for applications");
     }
 
+    if(job.application_status=='Applied'){
+      throw new BadRequestError("You have already applied for this job");
+    }
+
     const userDetails = await RPCService.request(USERS_RPC, {
       type: RPC_TYPES.GET_APPLICANT_DETAILS,
       data: {
