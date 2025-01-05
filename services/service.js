@@ -274,7 +274,13 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
       },
     });
 
-    const temp=await this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
+    const applicationId=result.application_id;
+
+    const updateData={
+      resume_score:resumeevaluation.score
+    }
+
+    const temp=await this.repository.updateApplication(applicationId,updateData);
 
 
   return {

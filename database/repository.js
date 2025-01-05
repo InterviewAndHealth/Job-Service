@@ -519,7 +519,6 @@ WHERE
   
   async updateApplication(applicationId, updateData) {
 
-    console.log("inside updateApplication repository");
     const fields = Object.keys(updateData);
     const values = Object.values(updateData);
   
