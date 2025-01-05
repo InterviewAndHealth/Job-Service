@@ -274,7 +274,6 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
       },
     });
 
-    console.log(" score is "+resumeevaluation.score);
 
     const applicationId=result.application_id;
 

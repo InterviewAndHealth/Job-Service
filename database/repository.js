@@ -519,8 +519,6 @@ WHERE
   
   async updateApplication(applicationId, updateData) {
 
-    console.log(applicationId);
-    console.log(updateData);
 
     const fields = Object.keys(updateData);
     const values = Object.values(updateData);
@@ -532,15 +530,10 @@ WHERE
       WHERE application_id = $1 
       RETURNING *`;
 
-      console.log(queryText);
-      console.log(values);
-  
     const result = await DB.query({
       text: queryText,
       values: [applicationId, ...values],
     });
-
-    console.log(result);
   
     return result.rows[0];
   }

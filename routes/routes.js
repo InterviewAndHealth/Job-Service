@@ -176,8 +176,6 @@ router.post("/recruiter/addexternalapplicant",upload.single("file"),async(req,re
 
   const data = await service.addExternalApplication(job_id,firstname,lastname,email,resume_link,externalid);
 
-  console.log("done from route");
-
   return res.status(200).json(data);
 })
 
