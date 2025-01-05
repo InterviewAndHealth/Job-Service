@@ -163,7 +163,7 @@ class Service {
 
     const job_description=job.job_description;
 
-    const resumescore = await RPCService.request(RESUME_RPC, {
+    const resumeevaluation = await RPCService.request(RESUME_RPC, {
       type: RPC_TYPES.GET_RESUME_SCORE,
       data: {
         resume: userDetails.signedUrl,
@@ -171,7 +171,7 @@ class Service {
       },
     });
 
-    const temp=this.repository.updateApplication(result.application_id,{resume_score:resumescore});
+    const temp=this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
 
     return {
       message: "Job applied successfully",
@@ -239,11 +239,9 @@ class Service {
 
 async addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid){
 
-  console.log("inside addExternalApplicant service");
 
   const result = await this.repository.addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid);
 
-  console.log("external applicant added successfully");
 
   return {
     message: "Applicant added successfully",
@@ -254,25 +252,21 @@ async addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_
 
 async addExternalApplication(job_id,firstname,lastname,email,resume_link,externalid){
 
-  console.log("inside addExternalApplication service");
 
   const name = firstname + " " + lastname;
 
   const result = await this.repository.addExternalApplication(job_id,name,email,resume_link,externalid);
 
-  console.log("external application added successfully");
 
   const job = await this.repository.getJobByJobId(job_id);
 
-  console.log("job fetched="+job);
 
   const job_description=job.job_description;
 
   const signedUrl=await getSignedUrlForRead(`${externalid}.pdf`);
 
-  console.log("signedUrl="+signedUrl);
 
-    const resumescore = await RPCService.request(RESUME_RPC, {
+    const resumeevaluation = await RPCService.request(RESUME_RPC, {
       type: RPC_TYPES.GET_RESUME_SCORE,
       data: {
         resume:signedUrl,
@@ -280,12 +274,7 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
       },
     });
 
-    console.log("resumescore="+resumescore);
-
-    const temp=this.repository.updateApplication(result.application_id,{resume_score:resumescore});
-
-    console.log("application updated="+temp);
-
+    const temp=await this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
 
 
   return {

@@ -539,7 +539,6 @@ WHERE
   }
 
   async addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid){
-    console.log("inside addExternalApplicant repository");
     const result = await DB.query({
       text: "INSERT INTO externalapplicants (externalid,job_id, firstname,lastname,email,contactnumber,resume_link) VALUES ($1, $2,$3,$4,$5,$6,$7) RETURNING *",
       values: [externalid,job_id,firstname,lastname,email,contactnumber,resume_link],
@@ -548,7 +547,6 @@ WHERE
   }
 
   async addExternalApplication(job_id,name,email,resume_link,externalid){
-    console.log("inside addExternalApplication repository");
     const id=nanoid();
     const result = await DB.query({
       text: "INSERT INTO applications (application_id,job_id, applicant_user_id,applicant_name,applicant_email,resume_link,application_type) VALUES ($1, $2, $3,$4,$5,$6,$7) RETURNING *",
