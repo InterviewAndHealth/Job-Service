@@ -541,7 +541,7 @@ WHERE
   async addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid){
     console.log("inside addExternalApplicant repository");
     const result = await DB.query({
-      text: "INSERT INTO externalapplicants (,externalid,job_id, firstname,lastname,email,contactnumber,resume_link) VALUES ($1, $2,$3,$4,$5,$6,$7) RETURNING *",
+      text: "INSERT INTO externalapplicants (externalid,job_id, firstname,lastname,email,contactnumber,resume_link) VALUES ($1, $2,$3,$4,$5,$6,$7) RETURNING *",
       values: [externalid,job_id,firstname,lastname,email,contactnumber,resume_link],
     });
     return result.rows[0];
