@@ -41,6 +41,7 @@ class DB {
 
       await this.createTable();
       await this.createApplicationTable();
+      await this.createExternalApplicantsTable();
     }
     return this.#pool.connect();
   }
@@ -58,6 +59,13 @@ class DB {
 
   static async createApplicationTable() {
     const pathToSQL = path.join(__dirname, "queries", "applications.sql");
+    const rawQuery = fs.readFileSync(pathToSQL).toString();
+    const query = rawQuery.replace(/\n/g, "").replace(/\s+/g, " ");
+    return this.#pool.query(query);
+  }
+
+  static async createExternalApplicantsTable() {
+    const pathToSQL = path.join(__dirname, "queries", "externalapplicants.sql");
     const rawQuery = fs.readFileSync(pathToSQL).toString();
     const query = rawQuery.replace(/\n/g, "").replace(/\s+/g, " ");
     return this.#pool.query(query);
