@@ -23,6 +23,15 @@ module.exports = {
   RABBITMQ_URL:
     process.env.RABBITMQ_URL ||
     `amqp://${process.env.RABBITMQ_USERNAME}:${process.env.RABBITMQ_PASSWORD}@${process.env.RABBITMQ_HOST}:${process.env.RABBITMQ_PORT}`,
+  AWS_ACCESS_KEY_ID:
+    process.env.AWS_ACCESS_KEY_ID || process.env.USER_SERVICE_AWS_ACCESS_KEY_ID,
+  AWS_SECRET_ACCESS_KEY:
+    process.env.AWS_SECRET_ACCESS_KEY ||
+    process.env.USER_SERVICE_AWS_SECRET_ACCESS_KEY,
+  AWS_REGION: process.env.AWS_REGION || process.env.USER_SERVICE_AWS_REGION,
+  AWS_S3_BUCKET_NAME:
+    process.env.AWS_S3_BUCKET_NAME ||
+    process.env.USER_SERVICE_AWS_S3_BUCKET_NAME,
 
   EXCHANGE_NAME: process.env.EXCHANGE_NAME,
   SERVICE_NAME: process.env.SERVICE_NAME || "JOB_SERVICE",
@@ -33,6 +42,8 @@ module.exports = {
   TEST_RPC: process.env.TEST_RPC,
   USERS_QUEUE: process.env.USER_QUEUE,
   USERS_RPC: process.env.USER_RPC,
+  RESUME_QUEUE: process.env.RESUME_QUEUE,
+  RESUME_RPC: process.env.RESUME_RPC,
   EVENT_TYPES,
   RPC_TYPES,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,

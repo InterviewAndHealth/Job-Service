@@ -5,6 +5,7 @@ const { BadRequestError } = require("../utils/errors");
 const router = express.Router();
 const service = new Service();
 const authMiddleware = require("../middlewares/auth");
+const { s3, upload, uploadFileToS3 } = require("../config/awsconfig");
 const { RPC_TYPES } = require("../config");
 
 router.get("/", (req, res) => {
@@ -136,20 +137,44 @@ router.get("/applicant/getmyapplications", authMiddleware, async (req, res) => {
 });
 
 
-router.post("/recommendation/getapplicationsbyjobid",async(req,res)=>{
-  const {job_id} = req.body;
-  const data = await service.getApplicationsByJobId(job_id);
+// router.post("/recommendation/getapplicationsbyjobid",async(req,res)=>{
+//   const {job_id} = req.body;
+//   const data = await service.getApplicationsByJobId(job_id);
+//   return res.status(200).json(data);
+// })
+
+// router.put("/recommendation/updateapplicationsbyapplicationid",async(req,res)=>{
+//   const updates = req.body; // Array of updates
+//     if (!Array.isArray(updates)) {
+//       return res.status(400).json({ error: "Request body must be an array of updates." });
+//     }
+
+//     const data = await service.updateApplications(updates);
+//     return res.status(200).json(data);
+// })
+
+
+
+router.post("/recruiter/addexternalapplicant",upload.single("file"),async(req,res)=>{
+  const{
+    job_id,
+    firstname,
+    lastname,
+    email,
+    contactnumber
+  }=req.body
+
+  const filePath = req.file.path;
+  const fileName = req.file.filename;
+  const externalid = fileName.split('.').slice(0, -1).join('.');
+
+  const resume_link = await uploadFileToS3(filePath, fileName);
+
+  const result = await service.addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid);
+
+  const data = await service.addExternalApplication(job_id,firstname,lastname,email,resume_link,externalid);
+
   return res.status(200).json(data);
-})
-
-router.put("/recommendation/updateapplicationsbyapplicationid",async(req,res)=>{
-  const updates = req.body; // Array of updates
-    if (!Array.isArray(updates)) {
-      return res.status(400).json({ error: "Request body must be an array of updates." });
-    }
-
-    const data = await service.updateApplications(updates);
-    return res.status(200).json(data);
 })
 
 

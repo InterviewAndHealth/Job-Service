@@ -12,9 +12,11 @@ const {
   TEST_QUEUE,
   TEST_RPC,
   USERS_QUEUE,
-  USERS_RPC
+  USERS_RPC,
+  RESUME_RPC,
 } = require("../config");
 const { RPC_TYPES } = require("../config");
+const { getSignedUrlForRead } = require("../config/awsconfig");
 
 // Service will contain all the business logic
 class Service {
@@ -159,6 +161,18 @@ class Service {
 
     if (!result) throw new InternalServerError("Failed to apply job");
 
+    const job_description=job.job_description;
+
+    const resumescore = await RPCService.request(RESUME_RPC, {
+      type: RPC_TYPES.GET_RESUME_SCORE,
+      data: {
+        resume: userDetails.signedUrl,
+        job_description:job_description
+      },
+    });
+
+    const temp=this.repository.updateApplication(result.application_id,{resume_score:resumescore});
+
     return {
       message: "Job applied successfully",
       result,
@@ -221,6 +235,54 @@ class Service {
     };
 
   }
+
+
+async addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid){
+
+  const result = await this.repository.addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid);
+
+  return {
+    message: "Applicant added successfully",
+    result,
+  };
+}
+
+
+async addExternalApplication(job_id,firstname,lastname,email,resume_link,externalid){
+
+  const name = firstname + " " + lastname;
+
+  const result = await this.repository.addExternalApplication(job_id,name,email,resume_link,externalid);
+
+  const job = await this.repository.getJobByJobId(job_id);
+
+  const job_description=job.job_description;
+
+  const signedUrl=await getSignedUrlForRead(`${externalid}.pdf`);
+
+    const resumescore = await RPCService.request(RESUME_RPC, {
+      type: RPC_TYPES.GET_RESUME_SCORE,
+      data: {
+        resume:signedUrl,
+        job_description:job_description
+      },
+    });
+
+    const temp=this.repository.updateApplication(result.application_id,{resume_score:resumescore});
+
+
+
+  return {
+    message: "Application added successfully",
+    result,
+  };
+
+}
+
+
+
+
+
 }
 
 // EventService.subscribe(SERVICE_QUEUE, Service);

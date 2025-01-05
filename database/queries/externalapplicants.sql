@@ -1,0 +1,11 @@
+CREATE TABLE IF NOT EXISTS externalapplicants (
+    externalid VARCHAR(12) PRIMARY KEY,
+    job_id VARCHAR(12) NOT NULL REFERENCES jobs(job_id) ON DELETE CASCADE,
+    firstname VARCHAR(100) NOT NULL,
+    lastname VARCHAR(100) NOT NULL,
+    email VARCHAR(255) UNIQUE NOT NULL,
+    contactnumber VARCHAR(15) NOT NULL,
+    resume_link VARCHAR(255) DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
