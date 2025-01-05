@@ -164,15 +164,28 @@ router.post("/recruiter/addexternalapplicant",upload.single("file"),async(req,re
     contactnumber
   }=req.body
 
+  console.log("in route");
+
   const filePath = req.file.path;
   const fileName = req.file.filename;
+
+  console.log(" filePath=" + filePath);
+  console.log(" fileName=" + fileName);
+
+
   const externalid = fileName.split('.').slice(0, -1).join('.');
 
+  console.log(" externalid=" + externalid);
+
   const resume_link = await uploadFileToS3(filePath, fileName);
+
+  console.log("resume_link="+resume_link);
 
   const result = await service.addExternalApplicant(job_id,firstname,lastname,email,contactnumber,resume_link,externalid);
 
   const data = await service.addExternalApplication(job_id,firstname,lastname,email,resume_link,externalid);
+
+  console.log("done from route");
 
   return res.status(200).json(data);
 })
