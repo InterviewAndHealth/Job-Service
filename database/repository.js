@@ -465,7 +465,7 @@ WHERE
 
   async getAllApplicantsDetails(job_id){
     const result = await DB.query({
-      text: "SELECT * FROM applications WHERE job_id = $1",
+      text: "SELECT * FROM applications WHERE job_id = $1 ORDER BY resume_score DESC NULLS LAST",
       values: [job_id],
     });
     return result.rows;
