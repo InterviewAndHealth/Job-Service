@@ -556,6 +556,31 @@ WHERE
 
   }
 
+  async scheduleJobInterview(job_id,application_id){
+
+    const id=nanoid();
+
+    const result = await DB.query({
+      text: "UPDATE applications SET application_status = 'interviewScheduled',interview_status = 'scheduled',interview_id = $1,updated_at = CURRENT_TIMESTAMP WHERE job_id = $2 AND application_id = $3 RETURNING *;",
+      values: [id,job_id,application_id],
+    });
+    return result.rows[0];
+  }
+
+  async addInterviewFeedback(interview_id, transcript, feedback){
+
+      const serializedTranscript = JSON.stringify(transcript);
+      const serializedFeedback = JSON.stringify(feedback);
+      const result = await DB.query({
+        text: `INSERT INTO jobinterviewfeedback (interview_id,transcript,feedback)
+          VALUES ($1,$2,$3) RETURNING *`,
+        values: [interview_id, serializedTranscript, serializedFeedback],
+      });
+  
+      return result.rows[0];
+
+  }
+
 
   
 }

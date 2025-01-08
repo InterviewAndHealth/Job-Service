@@ -18,6 +18,8 @@ const {
 const { RPC_TYPES } = require("../config");
 const { getSignedUrlForRead } = require("../config/awsconfig");
 
+const sendEmail = require("../utils/mail")
+
 // Service will contain all the business logic
 class Service {
   constructor() {
@@ -276,9 +278,15 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
 
 
     const applicationId=result.application_id;
+    const ai_screening_recommendation=false;
+
+    if(resumeevaluation.score>=75){
+        ai_screening_recommendation=true;
+    }
 
     const updateData={
-      resume_score:resumeevaluation.score
+      resume_score:resumeevaluation.score,
+      ai_screening_recommendation
     }
 
     const temp=await this.repository.updateApplication(applicationId,updateData);
@@ -291,8 +299,63 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
 
 }
 
+async sendInterviewEmail(email, interview_id) {
+  const interviewLink = `https://iamreadyai.com/jobinterview/${interview_id}`;
+  const options = {
+      to: email,
+      subject: "Your Job Interview Schedule with IamreadyAI",
+      html: `
+      <html>
+        <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; padding: 20px;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+            <h2 style="color: #4CAF50; text-align: center;">Your Job Interview Details</h2>
+            <p style="font-size: 16px; line-height: 1.5;">
+              Dear Candidate,
+            </p>
+            <p style="font-size: 16px; line-height: 1.5;">
+              Congratulations! Your job interview has been scheduled. We are excited to help you achieve your career goals. Please use the link below to join the interview at the scheduled time:
+            </p>
+            <div style="text-align: center; margin: 20px 0;">
+              <a href="${interviewLink}" target="_blank" style="background-color: #4CAF50; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+                Join Your Interview
+              </a>
+            </div>
+            <div style="background-color: #f9f9f9; padding: 10px; margin-top: 20px; border-left: 4px solid #4CAF50; font-size: 16px;">
+              <strong>Interview Link:</strong><br>
+              <a href="${interviewLink}" target="_blank" style="color: #4CAF50;">${interviewLink}</a>
+            </div>
+            <p style="font-size: 16px; line-height: 1.5;">
+              Please ensure that you are ready and prepared at the scheduled time. Good luck with your interview!
+            </p>
+            <p style="font-size: 16px; line-height: 1.5;">
+              Best Regards,<br>
+              <strong>IamreadyAI Team</strong>
+            </p>
+          </div>
+        </body>
+      </html>
+      `,
+  };
+
+  return await sendEmail(options);
+}
 
 
+
+async scheduleJobInterview(job_id,application_id_list){
+
+  for (const application_id of application_id_list) {
+
+    const result = await this.repository.scheduleJobInterview(job_id,application_id);
+
+    await this.sendInterviewEmail(result.applicant_email,result.interview_id);
+
+  }
+  return {
+    message: "Interview scheduled successfully",
+  };
+
+}
 
 
 }

@@ -7,6 +7,9 @@ BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_type') THEN
         CREATE TYPE Application_Type AS ENUM ('internal', 'external');
     END IF;
+    IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'interview_status') THEN
+        CREATE TYPE interview_status AS ENUM ('NA','scheduled', 'running', 'completed');
+    END IF;
 END $$;
 
 
@@ -24,7 +27,9 @@ CREATE TABLE IF NOT EXISTS applications (
     resume_link VARCHAR(255) DEFAULT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    application_type Application_Type DEFAULT 'internal'
+    application_type Application_Type DEFAULT 'internal',
+    interview_id VARCHAR(12) DEFAULT NULL,
+    interview_status interview_status DEFAULT 'NA',
 );
 
 

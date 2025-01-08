@@ -88,5 +88,18 @@ const getSignedUrlForRead = async (fileName) => {
     return signedUrl;
   };
 
+const getInternalSignedUrlForRead = async (fileName) => {
+    const command = new GetObjectCommand({
+      Bucket: AWS_S3_BUCKET_NAME,
+      Key: fileName,
+    });
+  
+    const signedUrl = await getSignedUrl(S3, command, {
+      expiresIn: SIGNED_URL_EXPIRATION,
+    });
+  
+    return signedUrl;
+  };
+
 
 module.exports = {s3,upload,uploadFileToS3,getSignedUrlForRead};

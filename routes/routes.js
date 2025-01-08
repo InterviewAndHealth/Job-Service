@@ -137,23 +137,6 @@ router.get("/applicant/getmyapplications", authMiddleware, async (req, res) => {
 });
 
 
-// router.post("/recommendation/getapplicationsbyjobid",async(req,res)=>{
-//   const {job_id} = req.body;
-//   const data = await service.getApplicationsByJobId(job_id);
-//   return res.status(200).json(data);
-// })
-
-// router.put("/recommendation/updateapplicationsbyapplicationid",async(req,res)=>{
-//   const updates = req.body; // Array of updates
-//     if (!Array.isArray(updates)) {
-//       return res.status(400).json({ error: "Request body must be an array of updates." });
-//     }
-
-//     const data = await service.updateApplications(updates);
-//     return res.status(200).json(data);
-// })
-
-
 
 router.post("/recruiter/addexternalapplicant",upload.single("file"),async(req,res)=>{
   const{
@@ -180,6 +163,16 @@ router.post("/recruiter/addexternalapplicant",upload.single("file"),async(req,re
 })
 
 
+router.post("/recruiter/schedulejobinterview",authMiddleware,async(req,res)=>{
+  const{
+    job_id,
+    application_id_list
+  }=req.body
+
+  const data = await service.scheduleJobInterview(job_id,application_id_list);
+
+  return res.status(200).json(data);
+})
 
 
 module.exports = router;
