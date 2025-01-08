@@ -348,7 +348,11 @@ async scheduleJobInterview(job_id,application_id_list){
 
     const result = await this.repository.scheduleJobInterview(job_id,application_id);
 
-    await this.sendInterviewEmail(result.applicant_email,result.interview_id);
+    const email = result.applicant_email;
+
+    const interview_id = result.interview_id;
+
+    await this.sendInterviewEmail(email,interview_id);
 
   }
   return {
