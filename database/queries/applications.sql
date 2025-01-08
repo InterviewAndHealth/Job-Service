@@ -29,7 +29,7 @@ CREATE TABLE IF NOT EXISTS applications (
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     application_type Application_Type DEFAULT 'internal',
     interview_id VARCHAR(12) DEFAULT NULL,
-    interview_status interview_status DEFAULT 'NA',
+    interview_status interview_status DEFAULT 'NA'
 );
 
 
