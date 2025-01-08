@@ -154,8 +154,8 @@ class Service {
     const result = await this.repository.Applicant_applyJob(
       job_id,
       user_id,
-      email,
       name,
+      email,
       resume
     );
 
@@ -348,7 +348,11 @@ async scheduleJobInterview(job_id,application_id_list){
 
     const result = await this.repository.scheduleJobInterview(job_id,application_id);
 
+    console.log(result);
+
     const email = result.applicant_email;
+
+    console.log("Email is =="+email);
 
     const interview_id = result.interview_id;
 
