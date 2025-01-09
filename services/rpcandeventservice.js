@@ -20,7 +20,7 @@ class JobsService {
 
       const job=await this.repository.getJobByJobId(job_id);
 
-      const user_id=job.user_id;
+      const user_id=application.applicant_user_id;
 
       const filename = `${user_id}.pdf`;
 
