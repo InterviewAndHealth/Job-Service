@@ -25,7 +25,7 @@ class JobsService {
       const filename = `${user_id}.pdf`;
 
 
-      const resume_url="";
+      let resume_url="";
 
       if(application.application_type=='internal'){
         resume_url=await getInternalSignedUrlForRead(filename);
