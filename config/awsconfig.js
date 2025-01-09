@@ -102,4 +102,4 @@ const getInternalSignedUrlForRead = async (fileName) => {
   };
 
 
-module.exports = {s3,upload,uploadFileToS3,getSignedUrlForRead};
+module.exports = {s3,upload,uploadFileToS3,getSignedUrlForRead,getInternalSignedUrlForRead};

@@ -1,6 +1,7 @@
 const { Repository } = require("../database");
 // A mock function to simulate user lookup
-// const { getSignedUrlForRead } = require("../config/awsconfig");
+const { getSignedUrlForRead,getInternalSignedUrlForRead } = require("../config/awsconfig");
+
 class JobsService {
   constructor() {
     this.repository = new Repository();
