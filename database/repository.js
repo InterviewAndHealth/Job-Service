@@ -248,6 +248,7 @@ async getFilteredJobs(
     job_title,
     job_experience,
     job_location,
+    company_name,
     restrict_applicants_country,
     job_type,
     work_type,
@@ -262,8 +263,8 @@ async getFilteredJobs(
     const result = await DB.query({
       text: `
         INSERT INTO jobs 
-        (job_id,user_id, job_title, job_experience, job_location, restrict_applicants_country, job_type, work_type, salary_min, salary_max, job_description, required_skills, application_deadline)
-        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13)
+        (job_id,user_id, job_title, job_experience, job_location, company_name, restrict_applicants_country, job_type, work_type, salary_min, salary_max, job_description, required_skills, application_deadline)
+        VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11, $12,$13, $14)
         RETURNING *`,
       values: [
         id,
@@ -271,6 +272,7 @@ async getFilteredJobs(
         job_title,
         job_experience,
         job_location,
+        company_name,
         restrict_applicants_country,
         job_type,
         work_type,

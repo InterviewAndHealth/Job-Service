@@ -44,6 +44,8 @@ module.exports = {
   USERS_RPC: process.env.USER_RPC,
   RESUME_QUEUE: process.env.RESUME_QUEUE,
   RESUME_RPC: process.env.RESUME_RPC,
+  PAYMENT_QUEUE: process.env.PAYMENT_QUEUE,
+  PAYMENT_RPC: process.env.PAYMENT_RPC,
   EVENT_TYPES,
   RPC_TYPES,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,

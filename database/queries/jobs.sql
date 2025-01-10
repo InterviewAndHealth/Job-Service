@@ -19,6 +19,7 @@ CREATE TABLE IF NOT EXISTS jobs (
     job_title VARCHAR(255) NOT NULL,
     job_experience VARCHAR(50) NOT NULL,  
     job_location VARCHAR(255)[] NOT NULL, 
+    company_name VARCHAR(255) NOT NULL,
     restrict_applicants_country VARCHAR(50)[] DEFAULT NULL,  
     job_type JOB_TYPE NOT NULL,  
     work_type WORK_TYPE NOT NULL,  

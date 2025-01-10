@@ -15,7 +15,7 @@ const {
   USERS_RPC,
   RESUME_RPC,
 } = require("../config");
-const { RPC_TYPES } = require("../config");
+const { RPC_TYPES,PAYMENT_RPC } = require("../config");
 const { getSignedUrlForRead } = require("../config/awsconfig");
 
 const sendEmail = require("../utils/mail")
@@ -72,6 +72,21 @@ class Service {
   }
 
   async createJob(jobData) {
+
+    const recruiter_data=await RPCService.request(USERS_RPC, {
+      type: RPC_TYPES.GET_RECRUITER_DETAILS,
+      data: {
+        userId: jobData.user_id,
+      },
+      
+    });
+
+    if (!recruiter_data) throw new NotFoundError("Recruiter not found");
+
+    const company_name=recruiter_data.company_name;
+
+    jobData.company_name=company_name;
+
     const job = await this.repository.createJob(jobData);
     if (!job) throw new InternalServerError("Failed to create job");
     return {
@@ -344,21 +359,60 @@ async sendInterviewEmail(email, interview_id) {
 
 async scheduleJobInterview(job_id,application_id_list){
 
-  for (const application_id of application_id_list) {
 
-    const result = await this.repository.scheduleJobInterview(job_id,application_id);
+  const no_of_applicants=application_id_list.length;
 
-    console.log(result);
 
-    const email = result.applicant_email;
+  const job = await this.repository.getJobByJobId(job_id);
+  if (!job) throw new NotFoundError("Job not found");
 
-    console.log("Email is =="+email);
+  const user_id = job.user_id;
 
-    const interview_id = result.interview_id;
+  const recruiter_data=await RPCService.request(PAYMENT_RPC, {
+    type: RPC_TYPES.GET_RECRUITER_INTERVIEW_AVAILABLE,
+    data: {
+      user_id: user_id,
+    },
+  });
 
-    await this.sendInterviewEmail(email,interview_id);
+  if(!recruiter_data){
+    throw new BadRequestError("Recruiter not found");
+  }
+
+  if(recruiter_data.interviews_available<no_of_applicants){
+
+    throw new BadRequestError("Not enough interviews available");
+
+  }else{
+
+    const result=await RPCService.request(PAYMENT_RPC, {
+      type: RPC_TYPES.DECREMENT_RECRUITER_INTERVIEW_AVAILABLE,
+      data: {
+        user_id: user_id,
+        number_of_interviews:no_of_applicants
+      },
+    });
+
+
+
+    for (const application_id of application_id_list) {
+
+      const result = await this.repository.scheduleJobInterview(job_id,application_id);
+  
+      console.log(result);
+  
+      const email = result.applicant_email;
+  
+      console.log("Email is =="+email);
+  
+      const interview_id = result.interview_id;
+  
+      await this.sendInterviewEmail(email,interview_id);
+  
+    }
 
   }
+
   return {
     message: "Interview scheduled successfully",
   };
