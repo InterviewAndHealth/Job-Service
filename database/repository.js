@@ -21,6 +21,7 @@ class Repository {
             j.job_title,
             j.job_experience,
             j.job_location,
+            j.company_name,
             j.job_type,
             j.work_type,
             j.salary_min,
@@ -183,7 +184,8 @@ async getFilteredJobs(
   if (jobKeywords) {
     filters.push(`
       (
-        LOWER(j.job_title) LIKE ANY(ARRAY(SELECT '%' || LOWER(keyword) || '%' FROM UNNEST($${values.length + 1}::TEXT[]) keyword)) 
+        LOWER(j.job_title) LIKE ANY(ARRAY(SELECT '%' || LOWER(keyword) || '%' FROM UNNEST($${values.length + 1}::TEXT[]) keyword))
+        OR LOWER(j.company_name) LIKE ANY(ARRAY(SELECT '%' || LOWER(keyword) || '%' FROM UNNEST($${values.length + 1}::TEXT[]) keyword)) 
         OR EXISTS (
           SELECT 1 FROM UNNEST(j.required_skills) skill 
           WHERE LOWER(skill) LIKE ANY(ARRAY(SELECT '%' || LOWER(keyword) || '%' FROM UNNEST($${values.length + 1}::TEXT[]) keyword))
@@ -200,6 +202,7 @@ async getFilteredJobs(
         j.job_title,
         j.job_experience,
         j.job_location,
+        j.company_name,
         j.job_type,
         j.work_type,
         j.salary_min,
@@ -303,6 +306,7 @@ async getFilteredJobs(
     j.job_title,
     j.job_experience,
     j.job_location,
+    j.company_name,
     j.job_type,
     j.work_type,
     j.salary_min,
