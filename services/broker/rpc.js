@@ -7,6 +7,7 @@ class RPCService {
    * Request a data from a service
    * @param {string} service_rpc - The service rpc to request data from
    * @param {object} request_payload - The request payload
+   * @param {number} timeout_ms - The request timeout in milliseconds
    * @returns {Promise} - A promise that resolves when the request is successful
    * @throws {Error} - If request fails
    * @example
@@ -17,10 +18,19 @@ class RPCService {
    *    },
    * });
    */
-  static async request(service_rpc, request_payload) {
+  static async request(service_rpc, request_payload, timeout_ms = 10000) {
     try {
       const id = nanoid();
-      const channel = await Broker.connect();
+
+      const connection = await Broker.connect();
+      const channel = connection.createChannel({
+        name: "job-rpc-requester",
+        setup(channel) {
+          return Promise.resolve(channel);
+        },
+        confirm: false,
+      });
+      await channel.waitForConnect();
       const queue = await channel.assertQueue("", { exclusive: true });
 
       channel.sendToQueue(
@@ -36,12 +46,13 @@ class RPCService {
         const timeout = setTimeout(async () => {
           try {
             await channel.deleteQueue(queue.queue);
+            await channel.close();
             reject("Request timed out");
           } catch (err) {
             console.error(`Failed to delete queue: ${err.message}`);
             reject("Request timed out with cleanup error");
           }
-        }, 10000);
+        }, timeout_ms);
 
         const consumerTagPromise = channel.consume(
           queue.queue,
@@ -51,6 +62,7 @@ class RPCService {
               resolve(JSON.parse(data.content.toString()));
               await channel.cancel(data.fields.consumerTag);
               await channel.deleteQueue(queue.queue);
+              await channel.close();
             }
           },
           { noAck: true }
@@ -78,29 +90,45 @@ class RPCService {
    */
   static async respond(responder) {
     try {
-      const channel = await Broker.connect();
-      await channel.assertQueue(RPC_QUEUE, {
-        durable: false,
-      });
-      channel.prefetch(1);
-      channel.consume(
-        RPC_QUEUE,
-        async (data) => {
-          if (data.content) {
-            const message = JSON.parse(data.content.toString());
-            const response = await responder.respondRPC(message);
-            channel.sendToQueue(
-              data.properties.replyTo,
-              Buffer.from(JSON.stringify(response)),
-              {
-                correlationId: data.properties.correlationId,
-              }
-            );
-            channel.ack(data);
-          }
+      const connection = await Broker.connect();
+
+      const onMessage = async (data) => {
+        if (data.content) {
+          const message = JSON.parse(data.content.toString());
+          const response = await responder.respondRPC(message);
+          channelWrapper.sendToQueue(
+            data.properties.replyTo,
+            Buffer.from(JSON.stringify(response)),
+            {
+              correlationId: data.properties.correlationId,
+            }
+          );
+          channelWrapper.ack(data);
+        }
+      };
+
+      const channelWrapper = connection.createChannel({
+        name: "job-rpc-responder",
+        setup(channel) {
+          return Promise.all([
+            channel.assertQueue(RPC_QUEUE, {
+              durable: false,
+              autoDelete: true,
+            }),
+            channel.prefetch(1),
+            channel.consume(RPC_QUEUE, onMessage, { noAck: false }),
+          ]);
         },
-        { noAck: false }
-      );
+      });
+
+      channelWrapper
+        .waitForConnect()
+        .then(() => {
+          console.log("Responding to RPC requests:", RPC_QUEUE);
+        })
+        .catch((err) => {
+          console.error("Failed to connect RPC responder", err);
+        });
     } catch (err) {
       console.log("Failed to respond to request");
     }

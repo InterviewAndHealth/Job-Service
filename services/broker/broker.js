@@ -1,43 +1,45 @@
-const amqplib = require("amqplib");
-const { RABBITMQ_URL, EXCHANGE_NAME } = require("../../config");
+var amqp = require("amqp-connection-manager");
+const { RABBITMQ_URL } = require("../../config");
 
 class Broker {
-  static #channel;
-  static #exchange;
+  static #connection;
 
   /**
    * Connect to RabbitMQ
-   * @returns {Promise} - A promise that resolves to a RabbitMQ channel
+   * @returns {Promise} - A promise that resolves to a RabbitMQ connection
    * @throws {Error} - If RabbitMQ connection fails
    */
   static async connect() {
     try {
-      if (this.#channel) return this.#channel;
-      const connection = await amqplib.connect(RABBITMQ_URL);
-      const channel = await connection.createChannel();
-      this.#channel = channel;
-      console.log("Connected to RabbitMQ");
-      return channel;
+      if (this.#connection) return this.#connection;
+      const connection = amqp.connect([RABBITMQ_URL]);
+
+      connection.on("connect", () => console.log("Connected to RabbitMQ"));
+      connection.on("disconnect", (err) =>
+        console.log("Disconnected from RabbitMQ", err.stack)
+      );
+      connection.on("blocked", (reason) =>
+        console.log("RabbitMQ connection blocked", reason)
+      );
+      connection.on("unblocked", () =>
+        console.log("RabbitMQ connection unblocked")
+      );
+
+      this.#connection = connection;
+      return connection;
     } catch (err) {
-      console.log("Failed to connect to RabbitMQ");
+      console.error("Failed to connect to RabbitMQ", err);
     }
   }
 
   /**
-   * Create a RabbitMQ exchange and channel
-   * @returns {Promise} - A promise that resolves to a RabbitMQ exchange
-   * @throws {Error} - If RabbitMQ queue creation fails
+   * Close RabbitMQ connection
    */
-  static async channel() {
-    try {
-      if (this.#exchange) return this.#exchange;
-      const channel = await this.connect();
-      await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
-      this.#exchange = channel;
-      console.log("Created RabbitMQ exchange");
-      return channel;
-    } catch (err) {
-      console.log("Failed to create RabbitMQ channel");
+  static async close() {
+    console.log("Closing RabbitMQ connection");
+    if (this.#connection) {
+      await this.#connection.close();
+      this.#connection = null;
     }
   }
 }
