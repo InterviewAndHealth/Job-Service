@@ -83,7 +83,7 @@ class Service {
 
     if (!recruiter_data) throw new NotFoundError("Recruiter not found");
 
-    const company_name=recruiter_data.company_name;
+    const company_name=recruiter_data.profile.company_name;
 
     jobData.company_name=company_name;
 
