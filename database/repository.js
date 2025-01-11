@@ -597,6 +597,17 @@ WHERE
   }
 
 
+  async updateInterviewStatusByInterviewId(interviewId,status)
+  {
+
+    const result = await DB.query({
+      text: "UPDATE applications SET interview_status = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
+      values: [status,interviewId],
+    });
+    return result.rows[0];
+  }
+
+
   
 }
 

@@ -51,6 +51,18 @@ class JobsService {
       await Promise.all([
         this.repository.addInterviewFeedback(interview_id, transcript, feedback),
       ]);
+    }else if (event.type === "INTERVIEW_COMPLETED") {
+      const { interviewId } = event.data;
+
+      await this.repository.updateInterviewStatusByInterviewId(interviewId,"completed");
+
+
+    } else if (event.type === "INTERVIEW_STARTED") {
+      const { interviewId } = event.data;
+
+      await this.repository.updateInterviewStatusByInterviewId(interviewId, "running");
+
+      
     }
   }
 }
