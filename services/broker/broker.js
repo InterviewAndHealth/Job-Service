@@ -16,7 +16,7 @@ class Broker {
 
       connection.on("connect", () => console.log("Connected to RabbitMQ"));
       connection.on("disconnect", (err) =>
-        console.log("Disconnected from RabbitMQ", err.stack)
+        console.log("Disconnected from RabbitMQ", err)
       );
       connection.on("blocked", (reason) =>
         console.log("RabbitMQ connection blocked", reason)

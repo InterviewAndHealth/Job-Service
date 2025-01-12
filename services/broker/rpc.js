@@ -24,7 +24,7 @@ class RPCService {
 
       const connection = await Broker.connect();
       const channel = connection.createChannel({
-        name: "job-rpc-requester",
+        name: `${service_rpc}-rpc-requester`,
         setup(channel) {
           return Promise.resolve(channel);
         },
@@ -108,7 +108,7 @@ class RPCService {
       };
 
       const channelWrapper = connection.createChannel({
-        name: "job-rpc-responder",
+        name: `${RPC_QUEUE}-rpc-responder`,
         setup(channel) {
           return Promise.all([
             channel.assertQueue(RPC_QUEUE, {
@@ -123,12 +123,8 @@ class RPCService {
 
       channelWrapper
         .waitForConnect()
-        .then(() => {
-          console.log("Responding to RPC requests:", RPC_QUEUE);
-        })
-        .catch((err) => {
-          console.error("Failed to connect RPC responder", err);
-        });
+        .then(() => console.log("Responding to RPC requests:", RPC_QUEUE))
+        .catch((err) => console.error("Failed to connect RPC responder", err));
     } catch (err) {
       console.log("Failed to respond to request");
     }
