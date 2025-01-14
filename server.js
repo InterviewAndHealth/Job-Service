@@ -11,6 +11,7 @@ const EventService = require("./services/broker/events");
 const { SERVICE_QUEUE } = require("./config/index");
 
 const multer = require("multer");
+const Broker = require("./services/broker/broker");
 
 const upload = multer();
 module.exports = async (app) => {
@@ -24,11 +25,8 @@ module.exports = async (app) => {
   app.use(error);
   app.use(upload.array());
 
-
-
   const jobsservice = new JobsService();
-await RPCService.respond(jobsservice);
-await EventService.subscribe(SERVICE_QUEUE, jobsservice);
+  await Broker.connect();
+  await RPCService.respond(jobsservice);
+  await EventService.subscribe(SERVICE_QUEUE, jobsservice);
 };
-
-

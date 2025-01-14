@@ -2,61 +2,81 @@ const { EXCHANGE_NAME, SERVICE_QUEUE } = require("../../config");
 const Broker = require("./broker");
 
 class EventService {
-  /**
-   * Publish an event to RabbitMQ queue
-   * @param {string} service - The service name to publish the event to
-   * @param {object} data - The event data
-   * @returns {Promise} - A promise that resolves when the event is published
-   * @throws {Error} - If event publishing fails
-   * @example
-   * Events.publish('INTERVIEW_SERVICE', {
-   *    type: 'INTERVIEW_SCHEDULED',
-   *    data: {
-   *        interviewId: 1,
-   *        candidateId: 1,
-   *    }
-   * });
-   */
-  static async publish(service, data) {
-    try {
-      const channel = await Broker.channel();
-      channel.publish(
-        EXCHANGE_NAME,
-        service,
-        Buffer.from(JSON.stringify(data))
-      );
-    } catch (err) {
-      console.log("Failed to publish event");
+  static publishChannelWrapper = null;
+
+  static async #getPublishChannelWrapper() {
+    if (!this.publishChannelWrapper) {
+      const connection = await Broker.connect();
+      this.publishChannelWrapper = connection.createChannel({
+        name: `${SERVICE_QUEUE}-events-publisher`,
+        json: true,
+        setup(channel) {
+          return channel.assertExchange(EXCHANGE_NAME, "direct", {
+            durable: true,
+          });
+        },
+      });
     }
+    return this.publishChannelWrapper;
   }
 
-  /**
-   * Subscribe to events from a service
-   * @param {string} service - The service name to subscribe to
-   * @param {function} subscriber - Service to receive events with function `handleEvent` to handle events
-   * @returns {Promise} - A promise that resolves when the subscription is successful
-   * @throws {Error} - If event subscription fails
-   * @example
-   * Events.subscribe('INTERVIEW_SERVICE', Service);
-   */
+  static async publish(service, data) {
+    const channelWrapper = await this.#getPublishChannelWrapper();
+    channelWrapper
+      .publish(EXCHANGE_NAME, service, data, { persistent: true })
+      .catch((err) => {
+        console.error("Failed to publish event", err);
+      });
+  }
+
   static async subscribe(service, subscriber) {
-    try {
-      const channel = await Broker.channel();
-      const queue = await channel.assertQueue(SERVICE_QUEUE);
-      channel.bindQueue(queue.queue, EXCHANGE_NAME, service);
-      channel.consume(
-        queue.queue,
-        (data) => {
+    const connection = await Broker.connect();
+
+    const setupChannel = async (channel) => {
+      await channel.assertExchange(EXCHANGE_NAME, "direct", { durable: true });
+      await channel.assertQueue(SERVICE_QUEUE, {
+        durable: true,
+        arguments: { "x-queue-type": "quorum" },
+      });
+      await channel.bindQueue(SERVICE_QUEUE, EXCHANGE_NAME, service);
+      await channel.consume(
+        SERVICE_QUEUE,
+        async (data) => {
           if (data.content) {
-            const message = JSON.parse(data.content.toString());
-            subscriber.handleEvent(message);
+            try {
+              const message = JSON.parse(data.content.toString());
+              await subscriber.handleEvent(message);
+              channel.ack(data);
+            } catch (err) {
+              console.error("Error handling event", err);
+              channel.nack(data);
+            }
           }
         },
-        { noAck: true }
+        { noAck: false }
       );
-    } catch (err) {
-      console.log("Failed to subscribe to service");
-    }
+    };
+
+    const channelWrapper = connection.createChannel({
+      name: `${SERVICE_QUEUE}-events-subscriber`,
+      json: true,
+      setup: setupChannel,
+    });
+
+    channelWrapper.addSetup((channel) => {
+      return channel.prefetch(1);
+    });
+
+    // Rebind on reconnect
+    connection.on("connect", async () => {
+      console.log("Binding queues...");
+      await setupChannel(channelWrapper);
+    });
+
+    channelWrapper
+      .waitForConnect()
+      .then(() => console.log(`Listening for events from service ${service}`))
+      .catch((err) => console.error("Failed to subscribe to service", err));
   }
 }
 

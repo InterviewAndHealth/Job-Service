@@ -1,6 +1,9 @@
 const { Repository } = require("../database");
 // A mock function to simulate user lookup
-const { getSignedUrlForRead,getInternalSignedUrlForRead } = require("../config/awsconfig");
+const {
+  getSignedUrlForRead,
+  getInternalSignedUrlForRead,
+} = require("../config/awsconfig");
 
 class JobsService {
   constructor() {
@@ -10,37 +13,37 @@ class JobsService {
   async respondRPC(request) {
     console.log("Received request", request);
 
-    if(request.type === "GET_APPLICANT_DETAILS_FOR_JOB_INTERVIEW"){
-      
-      const {interview_id} = request.data;
+    if (request.type === "GET_APPLICANT_DETAILS_FOR_JOB_INTERVIEW") {
+      const { interview_id } = request.data;
 
-      const application=await this.repository.getApplicationByInterviewId(interview_id);
+      const application = await this.repository.getApplicationByInterviewId(
+        interview_id
+      );
 
-      const job_id=application.job_id;
+      const job_id = application.job_id;
 
-      const job=await this.repository.getJobByJobId(job_id);
+      const job = await this.repository.getJobByJobId(job_id);
 
-      const user_id=application.applicant_user_id;
+      const user_id = application.applicant_user_id;
 
       const filename = `${user_id}.pdf`;
 
+      let resume_url = "";
 
-      let resume_url="";
-
-      if(application.application_type=='internal'){
-        resume_url=await getInternalSignedUrlForRead(filename);
-      }else{
-        resume_url=await getSignedUrlForRead(filename);
+      if (application.application_type == "internal") {
+        resume_url = await getInternalSignedUrlForRead(filename);
+      } else {
+        resume_url = await getSignedUrlForRead(filename);
       }
 
-      return{
+      return {
         application,
         job,
-        resume_url
-      }
-
-      
+        resume_url,
+      };
     }
+
+    return { error: "Invalid request" };
   }
 
   async handleEvent(event) {
@@ -49,20 +52,26 @@ class JobsService {
       const { interview_id, transcript, feedback } = event.data;
 
       await Promise.all([
-        this.repository.addInterviewFeedback(interview_id, transcript, feedback),
+        this.repository.addInterviewFeedback(
+          interview_id,
+          transcript,
+          feedback
+        ),
       ]);
-    }else if (event.type === "INTERVIEW_COMPLETED") {
+    } else if (event.type === "INTERVIEW_COMPLETED") {
       const { interviewId } = event.data;
 
-      await this.repository.updateInterviewStatusByInterviewId(interviewId,"completed");
-
-
+      await this.repository.updateInterviewStatusByInterviewId(
+        interviewId,
+        "completed"
+      );
     } else if (event.type === "INTERVIEW_STARTED") {
       const { interviewId } = event.data;
 
-      await this.repository.updateInterviewStatusByInterviewId(interviewId, "running");
-
-      
+      await this.repository.updateInterviewStatusByInterviewId(
+        interviewId,
+        "running"
+      );
     }
   }
 }
