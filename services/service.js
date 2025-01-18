@@ -314,8 +314,8 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
 
 }
 
-async sendInterviewEmail(email, interview_id) {
-  const interviewLink = `https://iamreadyai.com/jobinterview/${interview_id}`;
+async sendInterviewEmail(email, interview_id, user_id) {
+  const interviewLink = `https://iamreadyai.com/job-interview-instructions/?userId=${user_id}&interviewId=${interview_id}`;
   const options = {
       to: email,
       subject: "Your Job Interview Schedule with IamreadyAI",
@@ -402,12 +402,14 @@ async scheduleJobInterview(job_id,application_id_list){
       console.log(result);
   
       const email = result.applicant_email;
+
+      const user_id = result.applicant_user_id;
   
       console.log("Email is =="+email);
   
       const interview_id = result.interview_id;
   
-      await this.sendInterviewEmail(email,interview_id);
+      await this.sendInterviewEmail(email,interview_id,user_id);
   
     }
 
