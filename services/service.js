@@ -15,7 +15,7 @@ const {
   USERS_RPC,
   RESUME_RPC,
 } = require("../config");
-const { RPC_TYPES,PAYMENT_RPC } = require("../config");
+const { RPC_TYPES,PAYMENT_RPC,MY_APP_FRONTEND_URL } = require("../config");
 const { getSignedUrlForRead } = require("../config/awsconfig");
 
 const sendEmail = require("../utils/mail")
@@ -315,7 +315,7 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
 }
 
 async sendInterviewEmail(email, interview_id, user_id) {
-  const interviewLink = `https://iamreadyai.com/job-interview-instructions/?userId=${user_id}&interviewId=${interview_id}`;
+  const interviewLink = `${MY_APP_FRONTEND_URL}/job-interview-instructions/?userId=${user_id}&interviewId=${interview_id}`;
   const options = {
       to: email,
       subject: "Your Job Interview Schedule with IamreadyAI",

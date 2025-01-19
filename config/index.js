@@ -32,7 +32,8 @@ module.exports = {
   AWS_S3_BUCKET_NAME:
     process.env.AWS_S3_BUCKET_NAME ||
     process.env.USER_SERVICE_AWS_S3_BUCKET_NAME,
-
+  MY_APP_FRONTEND_URL:
+    process.env.MY_APP_FRONTEND_URL,
   EXCHANGE_NAME: process.env.EXCHANGE_NAME,
   SERVICE_NAME: process.env.SERVICE_NAME || "JOB_SERVICE",
   SERVICE_QUEUE: process.env.SERVICE_QUEUE || process.env.JOB_QUEUE,
