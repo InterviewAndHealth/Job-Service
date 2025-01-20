@@ -626,6 +626,17 @@ WHERE
   }
 
 
+
+  async getJobInterviewByInterviewId(interview_id){
+
+    const result = await DB.query({
+      text: "SELECT * FROM applications WHERE interview_id = $1",
+      values: [interview_id],
+    });
+    return result.rows[0];
+  }
+
+
   
 }
 

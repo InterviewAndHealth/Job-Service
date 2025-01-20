@@ -174,5 +174,16 @@ router.post("/recruiter/schedulejobinterview",authMiddleware,async(req,res)=>{
   return res.status(200).json(data);
 })
 
+router.post("/getjobinterviewdetails",authMiddleware,async(req,res)=>{
+  const{
+    interview_id
+  }=req.body
+
+  const data = await service.getJobInterview(interview_id);
+
+  return res.status(200).json(data);
+
+})
+
 
 module.exports = router;

@@ -327,11 +327,54 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
 
 }
 
-async sendInterviewEmail(email, interview_id, user_id) {
+// async sendInterviewEmail(email, interview_id, user_id) {
+//   const interviewLink = `${MY_APP_FRONTEND_URL}/job-interview-instructions/?userId=${user_id}&interviewId=${interview_id}`;
+//   const options = {
+//       to: email,
+//       subject: "Your Job Interview Schedule with IamreadyAI",
+//       html: `
+//       <html>
+//         <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; padding: 20px;">
+//           <div style="max-width: 600px; margin: 0 auto; background-color: #fff; border-radius: 8px; padding: 20px; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+//             <h2 style="color: #4CAF50; text-align: center;">Your Job Interview Details</h2>
+//             <p style="font-size: 16px; line-height: 1.5;">
+//               Dear Candidate,
+//             </p>
+//             <p style="font-size: 16px; line-height: 1.5;">
+//               Congratulations! Your job interview has been scheduled. We are excited to help you achieve your career goals. Please use the link below to join the interview at the scheduled time:
+//             </p>
+//             <div style="text-align: center; margin: 20px 0;">
+//               <a href="${interviewLink}" target="_blank" style="background-color: #4CAF50; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
+//                 Join Your Interview
+//               </a>
+//             </div>
+//             <div style="background-color: #f9f9f9; padding: 10px; margin-top: 20px; border-left: 4px solid #4CAF50; font-size: 16px;">
+//               <strong>Interview Link:</strong><br>
+//               <a href="${interviewLink}" target="_blank" style="color: #4CAF50;">${interviewLink}</a>
+//             </div>
+//             <p style="font-size: 16px; line-height: 1.5;">
+//               Please ensure that you are ready and prepared at the scheduled time. Good luck with your interview!
+//             </p>
+//             <p style="font-size: 16px; line-height: 1.5;">
+//               Best Regards,<br>
+//               <strong>IamreadyAI Team</strong>
+//             </p>
+//           </div>
+//         </body>
+//       </html>
+//       `,
+//   };
+
+//   return await sendEmail(options);
+// }
+
+
+
+async sendInterviewEmail(email, interview_id, user_id, job_title, company_name) {
   const interviewLink = `${MY_APP_FRONTEND_URL}/job-interview-instructions/?userId=${user_id}&interviewId=${interview_id}`;
   const options = {
       to: email,
-      subject: "Your Job Interview Schedule with IamreadyAI",
+      subject: `Your Job Interview Schedule for ${job_title} at ${company_name}`,
       html: `
       <html>
         <body style="font-family: Arial, sans-serif; background-color: #f4f4f9; color: #333; padding: 20px;">
@@ -341,7 +384,7 @@ async sendInterviewEmail(email, interview_id, user_id) {
               Dear Candidate,
             </p>
             <p style="font-size: 16px; line-height: 1.5;">
-              Congratulations! Your job interview has been scheduled. We are excited to help you achieve your career goals. Please use the link below to join the interview at the scheduled time:
+              Congratulations! Your job interview for the position of <strong>${job_title}</strong> at <strong>${company_name}</strong> has been scheduled. We are excited to help you achieve your career goals. Please use the link below to join the interview at the scheduled time:
             </p>
             <div style="text-align: center; margin: 20px 0;">
               <a href="${interviewLink}" target="_blank" style="background-color: #4CAF50; color: #fff; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-size: 16px;">
@@ -370,6 +413,7 @@ async sendInterviewEmail(email, interview_id, user_id) {
 
 
 
+
 async scheduleJobInterview(job_id,application_id_list){
 
 
@@ -380,6 +424,8 @@ async scheduleJobInterview(job_id,application_id_list){
   if (!job) throw new NotFoundError("Job not found");
 
   const user_id = job.user_id;
+  const job_title = job.job_title;
+  const company_name = job.company_name;
 
   const recruiter_data=await RPCService.request(PAYMENT_RPC, {
     type: RPC_TYPES.GET_RECRUITER_INTERVIEW_AVAILABLE,
@@ -422,7 +468,7 @@ async scheduleJobInterview(job_id,application_id_list){
   
       const interview_id = result.interview_id;
   
-      await this.sendInterviewEmail(email,interview_id,user_id);
+      await this.sendInterviewEmail(email,interview_id,user_id,job_title,company_name);
   
     }
 
@@ -432,6 +478,18 @@ async scheduleJobInterview(job_id,application_id_list){
     message: "Interview scheduled successfully",
   };
 
+}
+
+
+
+async getJobInterview(interview_id){
+
+  const result = await this.repository.getJobInterviewByInterviewId(interview_id);
+
+  return{
+    message:"Job Interview fetched successfully",
+    data:result
+  }
 }
 
 
