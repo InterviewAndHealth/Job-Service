@@ -496,7 +496,7 @@ WHERE
 
    async Applicant_getAllMyJobApplicationsByUserId(user_id) {
     const result = await DB.query({
-      text: "SELECT * from applications join jobs on applications.job_id = jobs.job_id where applications.applicant_user_id = $1",
+      text: "SELECT * from applications join jobs on applications.job_id = jobs.job_id where applications.applicant_user_id = $1 ORDER BY applications.created_at DESC",
       values: [user_id],
     });
 
