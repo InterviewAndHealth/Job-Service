@@ -607,6 +607,24 @@ WHERE
     return result.rows[0];
   }
 
+  async updateApplicationStatusByInterviewId(interviewId,status){
+
+    const result = await DB.query({
+      text: "UPDATE applications SET application_status = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
+      values: [status,interviewId],
+    });
+    return result.rows[0];
+  }
+
+  async updateInterviewScoreByInterviewId(interview_id,ai_interview_score){
+
+    const result = await DB.query({
+      text: "UPDATE applications SET ai_interview_score = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
+      values: [ai_interview_score,interview_id],
+    });
+    return result.rows[0];
+  }
+
 
   
 }

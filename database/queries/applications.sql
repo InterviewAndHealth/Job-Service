@@ -1,7 +1,7 @@
 DO $$
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_status') THEN
-        CREATE TYPE Application_Status AS ENUM ('pending', 'accepted', 'rejected','testScheduled','interviewScheduled');
+        CREATE TYPE Application_Status AS ENUM ('pending', 'accepted', 'rejected','testScheduled','interviewScheduled','interviewCompleted');
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_type') THEN

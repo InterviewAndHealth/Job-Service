@@ -188,7 +188,20 @@ class Service {
       },
     });
 
-    const temp=this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
+    const applicationId=result.application_id;
+    const ai_screening_recommendation=false;
+
+    if(resumeevaluation.score>=75){
+        ai_screening_recommendation=true;
+    }
+
+    const updateData={
+      resume_score:resumeevaluation.score,
+      ai_screening_recommendation
+    }
+
+    // const temp=this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
+    const temp=await this.repository.updateApplication(applicationId,updateData);
 
     return {
       message: "Job applied successfully",

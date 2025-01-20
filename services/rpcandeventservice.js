@@ -58,6 +58,15 @@ class JobsService {
           feedback
         ),
       ]);
+
+      const ai_interview_score = feedback.final_score;
+
+      await this.repository.updateInterviewScoreByInterviewId(
+        interview_id,
+        ai_interview_score
+      );
+
+
     } else if (event.type === "INTERVIEW_COMPLETED") {
       const { interviewId } = event.data;
 
@@ -65,6 +74,11 @@ class JobsService {
         interviewId,
         "completed"
       );
+      
+      await this.repository.updateApplicationStatusByInterviewId(
+        interviewId,
+        "interviewCompleted"
+      )
     } else if (event.type === "INTERVIEW_STARTED") {
       const { interviewId } = event.data;
 
