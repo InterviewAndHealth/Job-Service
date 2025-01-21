@@ -494,7 +494,7 @@ async getJobInterview(interview_id){
 
 
 
-async eventtesting(interview_id){
+async eventTesting(interview_id){
 
 
   EventService.publish(SERVICE_QUEUE, {

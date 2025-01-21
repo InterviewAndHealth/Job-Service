@@ -193,7 +193,7 @@ router.post("/eventtesting",async(req,res)=>{
     interview_id
   }=req.body
 
-  const data =await this.service.eventTesting(interview_id);
+  const data =await service.eventTesting(interview_id);
 })
 
 
