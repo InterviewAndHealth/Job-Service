@@ -636,6 +636,15 @@ WHERE
     return result.rows[0];
   }
 
+  async getJobInterviewFeedbackByInterviewId(interview_id){
+
+    const result = await DB.query({
+      text: "SELECT * FROM jobinterviewfeedback WHERE interview_id = $1",
+      values: [interview_id],
+    });
+    return result.rows[0];
+  }
+
 
   
 }

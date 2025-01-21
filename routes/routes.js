@@ -186,4 +186,15 @@ router.post("/getjobinterviewdetails",authMiddleware,async(req,res)=>{
 })
 
 
+
+router.post("/eventtesting",async(req,res)=>{
+
+  const{
+    interview_id
+  }=req.body
+
+  const data =await this.service.eventTesting(interview_id);
+})
+
+
 module.exports = router;

@@ -59,7 +59,9 @@ class JobsService {
         ),
       ]);
 
-      const ai_interview_score = feedback.final_score;
+      const result=await this.repository.getJobInterviewFeedbackByInterviewId(interview_id);
+
+      const ai_interview_score = result.feedback.final_score;
 
       await this.repository.updateInterviewScoreByInterviewId(
         interview_id,

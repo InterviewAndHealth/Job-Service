@@ -493,6 +493,28 @@ async getJobInterview(interview_id){
 }
 
 
+
+async eventtesting(interview_id){
+
+
+  EventService.publish(SERVICE_QUEUE, {
+    type: "INTERVIEW_DETAILS",
+    data: {
+      interview_id:interview_id,
+      transcript:{
+        question:"question"},
+      feedback:{
+        final_score:50
+      },
+    },
+  })
+
+  return{
+    message:"Event sent successfully"
+  }
+}
+
+
 }
 
 // EventService.subscribe(SERVICE_QUEUE, Service);
