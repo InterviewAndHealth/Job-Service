@@ -189,7 +189,7 @@ class Service {
     });
 
     const applicationId=result.application_id;
-    const ai_screening_recommendation=false;
+    let ai_screening_recommendation=false;
 
     if(resumeevaluation.score>=75){
         ai_screening_recommendation=true;
@@ -306,7 +306,7 @@ async addExternalApplication(job_id,firstname,lastname,email,resume_link,externa
 
 
     const applicationId=result.application_id;
-    const ai_screening_recommendation=false;
+    let ai_screening_recommendation=false;
 
     if(resumeevaluation.score>=75){
         ai_screening_recommendation=true;
