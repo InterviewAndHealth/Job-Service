@@ -419,9 +419,12 @@ async scheduleJobInterview(job_id,application_id_list){
 
   const no_of_applicants=application_id_list.length;
 
+  console.log(no_of_applicants);
+
 
   const job = await this.repository.getJobByJobId(job_id);
   if (!job) throw new NotFoundError("Job not found");
+  console.log(job);
 
   const user_id = job.user_id;
   const job_title = job.job_title;
@@ -433,6 +436,10 @@ async scheduleJobInterview(job_id,application_id_list){
       user_id: user_id,
     },
   });
+
+  console.log(recruiter_data);
+  console.log(recruiter_data.recruiter_data);
+
 
   if(!recruiter_data){
     throw new BadRequestError("Recruiter not found");
@@ -451,6 +458,8 @@ async scheduleJobInterview(job_id,application_id_list){
         number_of_interviews:no_of_applicants
       },
     });
+
+    console.log("result after reduction is ="+result);
 
 
 
