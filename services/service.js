@@ -438,11 +438,7 @@ async scheduleJobInterview(job_id,application_id_list){
   });
 
   console.log(recruiter_data);
-  console.log(JSON.parse(recruiter_data));
-  console.log(recruiter_data.interviews_available);
-  console.log(recruiter_data.recruiter_data);
-
-
+ 
 
   if(!recruiter_data){
     throw new BadRequestError("Recruiter not found");
