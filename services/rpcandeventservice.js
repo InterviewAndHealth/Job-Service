@@ -88,6 +88,26 @@ class JobsService {
         interviewId,
         "running"
       );
+    }else if (event.type === "RESUME_SCORED") {
+      const { id,score,expalination } = event.data;
+
+      let ai_screening_recommendation=false;
+      const applicationId=id;
+
+      if(score>=75){
+        ai_screening_recommendation=true;
+      }
+
+      const updateData={
+        resume_score:score,
+        ai_screening_recommendation
+      }
+  
+      // const temp=this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
+      const temp=await this.repository.updateApplication(applicationId,updateData);
+      
+
+
     }
   }
 }

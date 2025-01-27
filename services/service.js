@@ -14,6 +14,7 @@ const {
   USERS_QUEUE,
   USERS_RPC,
   RESUME_RPC,
+  RESUME_QUEUE
 } = require("../config");
 const { RPC_TYPES,PAYMENT_RPC,MY_APP_FRONTEND_URL } = require("../config");
 const { getSignedUrlForRead } = require("../config/awsconfig");
@@ -189,6 +190,20 @@ class Service {
     });
 
     const applicationId=result.application_id;
+
+    if(!resumeevaluation){
+
+      EventService.publish(RESUME_QUEUE, {
+        type: "GENERATE_RESUME_SCORE",
+        data: {
+          id: applicationId,
+          job_description:job_description,
+          resume: userDetails.signedUrl,
+        },
+      })
+    }
+
+    
     let ai_screening_recommendation=false;
 
     if(resumeevaluation.score>=75){
