@@ -189,6 +189,8 @@ class Service {
       },
     });
 
+    console.log(resumeevaluation);
+
     const applicationId=result.application_id;
 
     if(!resumeevaluation){
