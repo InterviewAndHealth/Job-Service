@@ -563,10 +563,12 @@ async manualApplicationFix1(){
     }
 
     const updateData={
-      ai_screening_recommendation:ai_screening_recommendation
+      ai_screening_recommendation
     }
 
     await this.repository.updateApplication(application.application_id,updateData);
+
+    console.log("Application updated");
 
   }
 
