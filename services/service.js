@@ -540,6 +540,92 @@ async eventTesting(interview_id){
 }
 
 
+
+async manualApplicationFix1(){
+
+  const data=await this.repository.manualApplicationFix1();
+
+  for(application in data){
+
+    let ai_screening_recommendation=false;
+
+    if(application.resume_score>=75){
+
+      ai_screening_recommendation=true;
+    }else{
+      ai_screening_recommendation=false;
+    }
+
+    const updateData={
+      ai_screening_recommendation:ai_screening_recommendation
+    }
+
+    await this.repository.updateApplication(application.application_id,updateData);
+
+  }
+
+
+  return{
+    message:"Application fix 1 successfully"
+  }
+}
+
+
+
+async manualApplicationFix2(){
+
+  const data=await this.repository.manualApplicationFix2();
+
+  for(application in data){
+
+    const job_id=application.job_id;
+    const user_id=application.applicant_user_id;
+
+
+    const job = await this.repository.getJobById(user_id,job_id);
+
+    // console.log(job);
+    if (!job) {
+      continue;
+    }
+
+    // console.log(job.validity_status);
+
+    if (job.validity_status != 'open') {
+      // throw new BadRequestError("Job is not open for applications");
+      continue;
+    }
+
+    const userDetails = await RPCService.request(USERS_RPC, {
+      type: RPC_TYPES.GET_APPLICANT_DETAILS,
+      data: {
+        userId: user_id,
+      },
+    });
+
+    // console.log(userDetails);
+    if (!userDetails) {
+      continue;
+    }
+
+    const job_description=job.job_description;
+
+
+    EventService.publish(RESUME_QUEUE, {
+      type: "GENERATE_RESUME_SCORE",
+      data: {
+        id: application.application_id,
+        job_description:job_description,
+        resume: userDetails.signedUrl,
+      },
+    })
+
+
+
+  }
+}
+
+
 }
 
 // EventService.subscribe(SERVICE_QUEUE, Service);

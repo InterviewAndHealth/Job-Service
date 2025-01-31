@@ -1,5 +1,6 @@
 const { customAlphabet } = require("nanoid");
 const DB = require("./db");
+const { text } = require("body-parser");
 
 const nanoid = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 12);
 
@@ -643,6 +644,27 @@ WHERE
       values: [interview_id],
     });
     return result.rows[0];
+  }
+
+
+
+  async manualApplicationFix1(){
+
+    const result = await DB.query({
+      text:"select * from applications WHERE resume_score is not null AND ai_screening_recommendation is null",
+    });
+
+    return result.rows;
+
+  }
+
+  async manualApplicationFix2(){
+
+    const result = await DB.query({
+      text:"select * from applications WHERE resume_score is null AND application_type = 'internal' order by created_at desc limit 10",
+    });
+
+    return result.rows;
   }
 
 

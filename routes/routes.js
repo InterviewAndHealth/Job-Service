@@ -197,4 +197,21 @@ router.post("/eventtesting",async(req,res)=>{
 })
 
 
+
+router.get("/manualapplicationfix1",async(req,res)=>{
+
+  const data=await service.manualApplicationFix1();
+
+  return res.status(200).json(data);
+})
+
+
+router.get("/manualapplicationfix2",async(req,res)=>{
+
+  const data=await service.manualApplicationFix2();
+
+  return res.status(200).json(data);
+})
+
+
 module.exports = router;
