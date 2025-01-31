@@ -650,6 +650,8 @@ WHERE
 
   async manualApplicationFix1(){
 
+    console.log("in repo");
+
     const result = await DB.query({
       text:"select * from applications WHERE resume_score is not null AND ai_screening_recommendation is null",
     });
@@ -659,6 +661,7 @@ WHERE
   }
 
   async manualApplicationFix2(){
+    console.log("in repo");
 
     const result = await DB.query({
       text:"select * from applications WHERE resume_score is null AND application_type = 'internal' order by created_at desc limit 10",

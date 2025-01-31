@@ -543,9 +543,15 @@ async eventTesting(interview_id){
 
 async manualApplicationFix1(){
 
+  console.log("in service")
+
   const data=await this.repository.manualApplicationFix1();
 
+  console.log(data);
+
   for(application in data){
+
+    console.log("in loop");
 
     let ai_screening_recommendation=false;
 
@@ -574,9 +580,13 @@ async manualApplicationFix1(){
 
 async manualApplicationFix2(){
 
+  console.log("in service")
+
   const data=await this.repository.manualApplicationFix2();
 
   for(application in data){
+
+    console.log("in loop");
 
     const job_id=application.job_id;
     const user_id=application.applicant_user_id;
@@ -584,7 +594,7 @@ async manualApplicationFix2(){
 
     const job = await this.repository.getJobById(user_id,job_id);
 
-    // console.log(job);
+    console.log(job);
     if (!job) {
       continue;
     }
@@ -603,7 +613,7 @@ async manualApplicationFix2(){
       },
     });
 
-    // console.log(userDetails);
+    console.log(userDetails);
     if (!userDetails) {
       continue;
     }
@@ -620,8 +630,15 @@ async manualApplicationFix2(){
       },
     })
 
+    console.log("Event sent successfully");
 
 
+
+  }
+
+
+  return{
+    message:"Application fix 2 successfully"
   }
 }
 
