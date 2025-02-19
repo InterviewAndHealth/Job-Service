@@ -628,14 +628,49 @@ WHERE
 
 
 
-  async getJobInterviewByInterviewId(interview_id){
+  // async getJobInterviewByInterviewId(interview_id){
 
-    const result = await DB.query({
-      text: "SELECT * FROM applications WHERE interview_id = $1",
-      values: [interview_id],
-    });
-    return result.rows[0];
+  //   const result = await DB.query({
+  //     text: "SELECT * FROM applications WHERE interview_id = $1",
+  //     values: [interview_id],
+  //   });
+  //   return result.rows[0];
+  // }
+
+  async getJobInterviewByInterviewId(interview_id) {
+    const applicationQuery = `
+      SELECT * FROM applications WHERE interview_id = $1
+    `;
+  
+    const talentPoolQuery = `
+      SELECT * FROM talentpoolrecommendation WHERE interview_id = $1
+    `;
+  
+    
+      // Search in applications table first
+      const applicationResult = await DB.query({
+        text: applicationQuery,
+        values: [interview_id],
+      });
+  
+      if (applicationResult.rows.length > 0) {
+        return applicationResult.rows[0]; // Return if found
+      }
+  
+      // If not found in applications, search in talentpoolrecommendation table
+      const talentPoolResult = await DB.query({
+        text: talentPoolQuery,
+        values: [interview_id],
+      });
+  
+      if (talentPoolResult.rows.length > 0) {
+        return talentPoolResult.rows[0]; // Return if found
+      }
+  
+      return null; // Return null if not found in both tables
+    
   }
+  
 
   async getJobInterviewFeedbackByInterviewId(interview_id){
 
@@ -657,12 +692,12 @@ WHERE
   }
 
 
-  async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score){
+  async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type){
 
 
     const result = await DB.query({
-      text: "INSERT INTO talentpoolrecommendation(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *;",
-      values: [job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score],
+      text: "INSERT INTO talentpoolrecommendation(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;",
+      values: [job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type],
     });
 
     return result.rows[0];

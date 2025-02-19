@@ -608,10 +608,10 @@ async scantalentpool(recruiter_id,job_id){
 
     console.log(resume_score);
 
+    const talentpool_type="internal";
 
 
-
-    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score);
+    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score,talentpool_type);
 
     console.log(response);
 
@@ -660,8 +660,10 @@ async scantalentpool(recruiter_id,job_id){
 
     console.log(resume_score);
 
+    const talentpool_type="external";
 
-    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score);
+
+    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score,talentpool_type);
 
     console.log(response);
 
