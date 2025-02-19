@@ -43,6 +43,7 @@ class DB {
       await this.createApplicationTable();
       await this.createExternalApplicantsTable();
       await this.createInterviewFeedbackTable();
+      await this.talentPoolRecommendationTable();
     }
     return this.#pool.connect();
   }
@@ -74,6 +75,13 @@ class DB {
 
   static async createInterviewFeedbackTable() {
     const pathToSQL = path.join(__dirname, "queries", "jobinterviewfeedback.sql");
+    const rawQuery = fs.readFileSync(pathToSQL).toString();
+    const query = rawQuery.replace(/\n/g, "").replace(/\s+/g, " ");
+    return this.#pool.query(query);
+  }
+
+  static async talentPoolRecommendationTable() {
+    const pathToSQL = path.join(__dirname, "queries", "talentpoolrecommendation.sql");
     const rawQuery = fs.readFileSync(pathToSQL).toString();
     const query = rawQuery.replace(/\n/g, "").replace(/\s+/g, " ");
     return this.#pool.query(query);

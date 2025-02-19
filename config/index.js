@@ -47,6 +47,8 @@ module.exports = {
   RESUME_RPC: process.env.RESUME_RPC,
   PAYMENT_QUEUE: process.env.PAYMENT_QUEUE,
   PAYMENT_RPC: process.env.PAYMENT_RPC,
+  TALENTPOOL_QUEUE:process.env.TALENTPOOL_QUEUE,
+  TALENTPOOL_RPC:process.env.TALENTPOOL_RPC,
   EVENT_TYPES,
   RPC_TYPES,
   JWT_SECRET_KEY: process.env.JWT_SECRET_KEY,

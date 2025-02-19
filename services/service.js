@@ -14,10 +14,12 @@ const {
   USERS_QUEUE,
   USERS_RPC,
   RESUME_RPC,
-  RESUME_QUEUE
+  RESUME_QUEUE,
+  TALENTPOOL_QUEUE,
+  TALENTPOOL_RPC
 } = require("../config");
 const { RPC_TYPES,PAYMENT_RPC,MY_APP_FRONTEND_URL } = require("../config");
-const { getSignedUrlForRead } = require("../config/awsconfig");
+const { getSignedUrlForRead,getInternalSignedUrlForRead ,getTalentPoolSignedUrlForRead} = require("../config/awsconfig");
 
 const sendEmail = require("../utils/mail")
 
@@ -516,6 +518,221 @@ async getJobInterview(interview_id){
     data:result
   }
 }
+
+
+
+
+
+async scantalentpool(recruiter_id,job_id){
+
+  const job = await this.repository.getJobByJobId(job_id);
+
+  console.log("fetching Job details");
+
+    // console.log(job);
+    if (!job) throw new NotFoundError("Job not found");
+
+    const job_description=job.job_description;
+
+
+  const AllInternalStudentUsers=await RPCService.request(USERS_RPC, {
+    type: RPC_TYPES.TALENTPOOL_GET_ALL_STUDENT_USERS,
+    data: {
+      recruiter_id:recruiter_id
+    },
+  });
+
+  console.log("fetching Internal Students Details");
+
+
+
+  const AllTalentPoolUsers=await RPCService.request(TALENTPOOL_RPC, {
+    type: RPC_TYPES.TALENTPOOL_GET_ALL_TALENTPOOL_USERS,
+    data: {
+      recruiter_id:recruiter_id
+    },
+  });
+
+  console.log("fetching TalentPool Students Details");
+
+
+  const alreadyscanned=await this.repository.getalreadyscanned(recruiter_id,job_id);
+  console.log("fetching alreadyscanned");
+
+
+  for (const student of AllInternalStudentUsers) {
+
+    if(alreadyscanned.find((item)=>item.resume_id===student.resume_id)){
+      console.log("already scanned");
+      continue;
+    }
+
+    // const fileName=student.resume_id+".pdf";
+    const fileName = `${student.resume_id}.pdf`;
+
+
+    const signedUrl=await getInternalSignedUrlForRead(fileName);
+
+
+    const resumeevaluation = await RPCService.request(RESUME_RPC, {
+      type: RPC_TYPES.GET_RESUME_SCORE,
+      data: {
+        resume:signedUrl,
+        job_description:job_description
+      },
+    });
+
+    let ai_screening_recommendation=false;
+
+    if(resumeevaluation.score>=75){
+        ai_screening_recommendation=true;
+    }
+
+    const resume_score=resumeevaluation.score;
+
+
+
+
+    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score);
+
+
+  }
+
+
+  for(const student of AllTalentPoolUsers){
+
+
+    if(alreadyscanned.find((item)=>item.resume_id===student.resume_id)){
+      console.log("already scanned");
+      continue;
+    }
+
+    // const fileName=student.resume_id+".pdf";
+    const fileName = `${student.resume_id}.pdf`;
+
+
+    const signedUrl=await getTalentPoolSignedUrlForRead(fileName);
+
+
+    const resumeevaluation = await RPCService.request(RESUME_RPC, {
+      type: RPC_TYPES.GET_RESUME_SCORE,
+      data: {
+        resume:signedUrl,
+        job_description:job_description
+      },
+    });
+
+    let ai_screening_recommendation=false;
+
+    if(resumeevaluation.score>=75){
+        ai_screening_recommendation=true;
+    }
+
+    const resume_score=resumeevaluation.score;
+
+
+    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score);
+
+  }
+
+
+
+  return{
+    message:"Scanned Successfully"
+  }
+
+}
+
+
+async gettalentpool(recruiter_id,job_id){
+
+
+  const data=await this.repository.getalreadyscanned(recruiter_id,job_id);
+
+  return{
+    message:"Talent Pool fetched successfully",
+    data:data
+  }
+
+}
+
+async scheduleTalentPoolInterview(job_id,resume_id_list){
+
+
+  const no_of_applicants=resume_id_list.length;
+
+  console.log(no_of_applicants);
+
+
+  const job = await this.repository.getJobByJobId(job_id);
+  if (!job) throw new NotFoundError("Job not found");
+  console.log(job);
+
+  const user_id = job.user_id;
+  const job_title = job.job_title;
+  const company_name = job.company_name;
+
+  const recruiter_data=await RPCService.request(PAYMENT_RPC, {
+    type: RPC_TYPES.GET_RECRUITER_INTERVIEW_AVAILABLE,
+    data: {
+      user_id: user_id,
+    },
+  });
+
+  console.log(recruiter_data);
+ 
+
+  if(!recruiter_data){
+    throw new BadRequestError("Recruiter not found");
+  }
+
+  if(recruiter_data.interviews_available<no_of_applicants){
+
+    throw new BadRequestError("Not enough interviews available");
+
+  }else{
+
+    const result=await RPCService.request(PAYMENT_RPC, {
+      type: RPC_TYPES.DECREMENT_RECRUITER_INTERVIEW_AVAILABLE,
+      data: {
+        user_id: user_id,
+        number_of_interviews:no_of_applicants
+      },
+    });
+
+    console.log("result after reduction is ="+result);
+
+
+
+    for (const resume_id of resume_id_list) {
+
+      const result = await this.repository.scheduleTalentPoolInterview(job_id,resume_id);
+  
+      console.log(result);
+  
+      const email = result.candidate_email;
+
+      const user_id = result.resume_id;
+  
+      console.log("Email is =="+email);
+  
+      const interview_id = result.interview_id;
+  
+      await this.sendInterviewEmail(email,interview_id,user_id,job_title,company_name);
+  
+    }
+
+  }
+
+  return {
+    message: "Interview scheduled successfully",
+  };
+
+}
+
+
+
+
 
 
 

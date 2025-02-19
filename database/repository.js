@@ -647,6 +647,40 @@ WHERE
   }
 
 
+  async getalreadyscanned(recruiter_id,job_id){
+
+    const result = await DB.query({
+      text: "SELECT * FROM talentpoolrecommendation WHERE recruiter_id = $1 AND job_id = $2",
+      values: [recruiter_id,job_id],
+    });
+    return result.rows;
+  }
+
+
+  async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score){
+
+
+    const result = await DB.query({
+      text: "INSERT INTO talentpoolrecommendation(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10) RETURNING *;",
+      values: [job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score],
+    });
+
+    return result.rows[0];
+  }
+
+
+  async scheduleTalentPoolInterview(job_id,resume_id){
+
+    const id=nanoid();
+
+    const result = await DB.query({
+      text: "UPDATE talentpoolrecommendation SET interview_id = $1, interview_status = 'scheduled',updated_at = CURRENT_TIMESTAMP WHERE job_id = $2 AND resume_id = $3 RETURNING *;",    
+      values: [id,job_id,resume_id],
+    });
+
+    return result.rows[0];
+  }
+
 
   async manualApplicationFix1(){
 

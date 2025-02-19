@@ -187,6 +187,48 @@ router.post("/getjobinterviewdetails",authMiddleware,async(req,res)=>{
 
 
 
+router.post("/recruiter/scantalentpool",authMiddleware,async(req,res)=>{
+
+  const recruiter_id=req.userId;
+
+  const{job_id}=req.body;
+
+  const data = await service.scantalentpool(recruiter_id,job_id);
+
+  return res.status(200).json(data);
+  
+})
+
+router.get("/recruiter/gettalentpool",authMiddleware,async(req,res)=>{
+
+  const recruiter_id=req.userId;
+
+  const{job_id}=req.body;
+
+  const data =await service.gettalentpool(recruiter_id,job_id);
+
+  return res.status(200).json(data);
+
+})
+
+router.post("/recruiter/scheduletalentpoolinterview",authMiddleware,async(req,res)=>{
+  const{
+    job_id,
+    resume_id_list
+  }=req.body
+
+  const data = await service.scheduleTalentPoolInterview(job_id,resume_id_list);
+
+  return res.status(200).json(data);
+})
+
+
+
+
+
+
+
+
 router.post("/eventtesting",async(req,res)=>{
 
   const{

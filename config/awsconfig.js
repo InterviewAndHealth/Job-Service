@@ -102,4 +102,19 @@ const getInternalSignedUrlForRead = async (fileName) => {
   };
 
 
-module.exports = {s3,upload,uploadFileToS3,getSignedUrlForRead,getInternalSignedUrlForRead};
+
+  const getTalentPoolSignedUrlForRead = async (fileName) => {
+    const command = new GetObjectCommand({
+      Bucket: AWS_S3_BUCKET_NAME,
+      Key:`TalentPool/${fileName}`,
+    });
+  
+    const signedUrl = await getSignedUrl(S3, command, {
+      expiresIn: SIGNED_URL_EXPIRATION,
+    });
+  
+    return signedUrl;
+  };
+
+
+module.exports = {s3,upload,uploadFileToS3,getSignedUrlForRead,getInternalSignedUrlForRead,getTalentPoolSignedUrlForRead};
