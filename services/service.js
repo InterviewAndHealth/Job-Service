@@ -529,7 +529,7 @@ async scantalentpool(recruiter_id,job_id){
 
   console.log("fetching Job details");
 
-    // console.log(job);
+    console.log(job);
     if (!job) throw new NotFoundError("Job not found");
 
     const job_description=job.job_description;
@@ -544,6 +544,8 @@ async scantalentpool(recruiter_id,job_id){
 
   console.log("fetching Internal Students Details");
 
+  console.log(AllInternalStudentUsers);
+
 
 
   const AllTalentPoolUsers=await RPCService.request(TALENTPOOL_RPC, {
@@ -555,12 +557,19 @@ async scantalentpool(recruiter_id,job_id){
 
   console.log("fetching TalentPool Students Details");
 
+  console.log(AllTalentPoolUsers);
+
 
   const alreadyscanned=await this.repository.getalreadyscanned(recruiter_id,job_id);
   console.log("fetching alreadyscanned");
 
+  console.log(alreadyscanned);
+
 
   for (const student of AllInternalStudentUsers) {
+
+    console.log("in first loop");
+    console.log(student);
 
     if(alreadyscanned.find((item)=>item.resume_id===student.resume_id)){
       console.log("already scanned");
@@ -570,8 +579,13 @@ async scantalentpool(recruiter_id,job_id){
     // const fileName=student.resume_id+".pdf";
     const fileName = `${student.resume_id}.pdf`;
 
+    console.log(fileName);
+
 
     const signedUrl=await getInternalSignedUrlForRead(fileName);
+
+    console.log(signedUrl);
+
 
 
     const resumeevaluation = await RPCService.request(RESUME_RPC, {
@@ -582,6 +596,8 @@ async scantalentpool(recruiter_id,job_id){
       },
     });
 
+    console.log(resumeevaluation);
+
     let ai_screening_recommendation=false;
 
     if(resumeevaluation.score>=75){
@@ -590,10 +606,14 @@ async scantalentpool(recruiter_id,job_id){
 
     const resume_score=resumeevaluation.score;
 
+    console.log(resume_score);
+
 
 
 
     const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score);
+
+    console.log(response);
 
 
   }
@@ -601,6 +621,8 @@ async scantalentpool(recruiter_id,job_id){
 
   for(const student of AllTalentPoolUsers){
 
+    console.log("in second loop");
+    console.log(student);
 
     if(alreadyscanned.find((item)=>item.resume_id===student.resume_id)){
       console.log("already scanned");
@@ -610,8 +632,12 @@ async scantalentpool(recruiter_id,job_id){
     // const fileName=student.resume_id+".pdf";
     const fileName = `${student.resume_id}.pdf`;
 
+    console.log(fileName);
+
 
     const signedUrl=await getTalentPoolSignedUrlForRead(fileName);
+
+    console.log(signedUrl);
 
 
     const resumeevaluation = await RPCService.request(RESUME_RPC, {
@@ -622,6 +648,8 @@ async scantalentpool(recruiter_id,job_id){
       },
     });
 
+    console.log(resumeevaluation);
+
     let ai_screening_recommendation=false;
 
     if(resumeevaluation.score>=75){
@@ -630,8 +658,12 @@ async scantalentpool(recruiter_id,job_id){
 
     const resume_score=resumeevaluation.score;
 
+    console.log(resume_score);
+
 
     const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score);
+
+    console.log(response);
 
   }
 
