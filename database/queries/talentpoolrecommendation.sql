@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS talentpoolrecommendation (
     interview_id VARCHAR(12) DEFAULT NULL,
     interview_status interview_status DEFAULT 'NA',
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
 
