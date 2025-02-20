@@ -199,7 +199,7 @@ router.post("/recruiter/scantalentpool",authMiddleware,async(req,res)=>{
   
 })
 
-router.get("/recruiter/gettalentpool",authMiddleware,async(req,res)=>{
+router.post("/recruiter/gettalentpool",authMiddleware,async(req,res)=>{
 
   const recruiter_id=req.userId;
 
