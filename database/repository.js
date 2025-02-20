@@ -598,15 +598,56 @@ WHERE
   }
 
 
-  async updateInterviewStatusByInterviewId(interviewId,status)
-  {
+  // async updateInterviewStatusByInterviewId(interviewId,status)
+  // {
 
-    const result = await DB.query({
-      text: "UPDATE applications SET interview_status = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
-      values: [status,interviewId],
-    });
-    return result.rows[0];
+  //   const result = await DB.query({
+  //     text: "UPDATE applications SET interview_status = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
+  //     values: [status,interviewId],
+  //   });
+  //   return result.rows[0];
+  // }
+
+
+  async updateInterviewStatusByInterviewId(interviewId, status) {
+    const updateApplicationsQuery = `
+      UPDATE applications 
+      SET interview_status = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE interview_id = $2 
+      RETURNING *;
+    `;
+  
+    const updateTalentPoolQuery = `
+      UPDATE talentpoolrecommendation 
+      SET interview_status = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE interview_id = $2 
+      RETURNING *;
+    `;
+  
+      // Try updating in applications table first
+      const applicationResult = await DB.query({
+        text: updateApplicationsQuery,
+        values: [status, interviewId],
+      });
+  
+      if (applicationResult.rows.length > 0) {
+        return applicationResult.rows[0]; // Return updated row if found in applications
+      }
+  
+      // If not found in applications, update in talentpoolrecommendation table
+      const talentPoolResult = await DB.query({
+        text: updateTalentPoolQuery,
+        values: [status, interviewId],
+      });
+  
+      if (talentPoolResult.rows.length > 0) {
+        return talentPoolResult.rows[0]; // Return updated row if found in talentpoolrecommendation
+      }
+  
+      return null; // Return null if interviewId is not found in both tables
+    
   }
+  
 
   async updateApplicationStatusByInterviewId(interviewId,status){
 
@@ -617,14 +658,55 @@ WHERE
     return result.rows[0];
   }
 
-  async updateInterviewScoreByInterviewId(interview_id,ai_interview_score){
+  // async updateInterviewScoreByInterviewId(interview_id,ai_interview_score){
 
-    const result = await DB.query({
-      text: "UPDATE applications SET ai_interview_score = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
-      values: [ai_interview_score,interview_id],
-    });
-    return result.rows[0];
+  //   const result = await DB.query({
+  //     text: "UPDATE applications SET ai_interview_score = $1,updated_at = CURRENT_TIMESTAMP WHERE interview_id = $2 RETURNING *;",
+  //     values: [ai_interview_score,interview_id],
+  //   });
+  //   return result.rows[0];
+  // }
+
+  async updateInterviewScoreByInterviewId(interview_id, ai_interview_score) {
+    const updateApplicationsQuery = `
+      UPDATE applications 
+      SET ai_interview_score = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE interview_id = $2 
+      RETURNING *;
+    `;
+  
+    const updateTalentPoolQuery = `
+      UPDATE talentpoolrecommendation 
+      SET ai_interview_score = $1, updated_at = CURRENT_TIMESTAMP 
+      WHERE interview_id = $2 
+      RETURNING *;
+    `;
+  
+    
+      // First, attempt to update in applications table
+      const applicationResult = await DB.query({
+        text: updateApplicationsQuery,
+        values: [ai_interview_score, interview_id],
+      });
+  
+      if (applicationResult.rows.length > 0) {
+        return applicationResult.rows[0]; // Return updated row if found in applications
+      }
+  
+      // If not found in applications, attempt to update in talentpoolrecommendation table
+      const talentPoolResult = await DB.query({
+        text: updateTalentPoolQuery,
+        values: [ai_interview_score, interview_id],
+      });
+  
+      if (talentPoolResult.rows.length > 0) {
+        return talentPoolResult.rows[0]; // Return updated row if found in talentpoolrecommendation
+      }
+  
+      return null; // Return null if interview_id is not found in both tables
+    
   }
+  
 
 
 
@@ -713,6 +795,18 @@ WHERE
       values: [id,job_id,resume_id],
     });
 
+    return result.rows[0];
+  }
+
+
+  async getTalentPoolEntryByInterviewId(
+    interview_id
+  ){
+
+    const result = await DB.query({
+      text: "SELECT * FROM talentpoolrecommendation WHERE interview_id = $1",
+      values: [interview_id],
+    });
     return result.rows[0];
   }
 

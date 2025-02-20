@@ -3,6 +3,7 @@ const { Repository } = require("../database");
 const {
   getSignedUrlForRead,
   getInternalSignedUrlForRead,
+  getTalentPoolSignedUrlForRead
 } = require("../config/awsconfig");
 
 class JobsService {
@@ -20,7 +21,9 @@ class JobsService {
         interview_id
       );
 
-      const job_id = application.job_id;
+      if(application){
+
+        const job_id = application.job_id;
 
       const job = await this.repository.getJobByJobId(job_id);
 
@@ -41,6 +44,39 @@ class JobsService {
         job,
         resume_url,
       };
+
+      }else{
+
+        const talentpoolentry = await this.repository.getTalentPoolEntryByInterviewId(
+          interview_id
+        );
+
+        const job_id = talentpoolentry.job_id;
+
+      const job = await this.repository.getJobByJobId(job_id);
+
+      const user_id = talentpoolentry.resume_id;
+
+      const filename = `${user_id}.pdf`;
+
+      let resume_url = "";
+
+      if (talentpoolentry.talentpool_type == "internal") {
+        resume_url = await getInternalSignedUrlForRead(filename);
+      } else {
+        resume_url = await getTalentPoolSignedUrlForRead(filename);
+      }
+
+      return {
+        talentpoolentry,
+        job,
+        resume_url,
+      };
+
+
+      }
+
+      
     }
 
     return { error: "Invalid request" };
