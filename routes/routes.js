@@ -220,7 +220,20 @@ router.post("/recruiter/scheduletalentpoolinterview",authMiddleware,async(req,re
   const data = await service.scheduleTalentPoolInterview(job_id,resume_id_list);
 
   return res.status(200).json(data);
-})
+});
+
+router.post("/recruiter/moverecommendedtoapplication",authMiddleware,async(req,res)=>{
+
+  const{
+    job_id,
+    resume_id_list
+  }=req.body
+
+  const data = await service.moveRecommendedToApplication(job_id,resume_id_list);
+
+  return res.status(200).json(data);
+
+});
 
 
 

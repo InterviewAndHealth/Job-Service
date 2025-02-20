@@ -5,7 +5,7 @@ BEGIN
     END IF;
 
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'application_type') THEN
-        CREATE TYPE Application_Type AS ENUM ('internal', 'external');
+        CREATE TYPE Application_Type AS ENUM ('internal', 'external', 'talentpool');
     END IF;
     IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'interview_status') THEN
         CREATE TYPE interview_status AS ENUM ('NA','scheduled', 'running', 'completed');

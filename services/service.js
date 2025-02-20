@@ -765,6 +765,32 @@ async scheduleTalentPoolInterview(job_id,resume_id_list){
 }
 
 
+async moveRecommendedToApplication(job_id,resume_id_list){
+
+  const jobdata=await this.repository.getJobByJobId(job_id);
+
+  if(!jobdata){
+    throw new NotFoundError("Job not found");
+  }
+
+  for(const resume_id of resume_id_list){
+
+    const data=await this.repository.getTalentPoolRecommendationByResumeIdandJobId(resume_id,job_id);
+
+    const result=await this.repository.moveRecommendedToApplication(job_id,data.resume_id,data.candidate_name,data.candidate_email,data.ai_screening_recommendation,data.resume_score,data.ai_interview_score,data.interview_id,data.interview_status);
+
+    const response=await this.repository.deleteTalentPoolRecommendationByResumeIdandJobId(resume_id,job_id);
+
+  }
+
+
+  return{
+    message:"Moved Successfully"
+  }
+
+}
+
+
 
 
 

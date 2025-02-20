@@ -811,6 +811,48 @@ WHERE
   }
 
 
+
+  async getTalentPoolRecommendationByResumeIdandJobId(resume_id,job_id){
+
+    const result = await DB.query({
+      text: "SELECT * FROM talentpoolrecommendation WHERE resume_id = $1 AND job_id = $2",
+      values: [resume_id,job_id],
+    });
+    return result.rows[0];
+  }
+
+  async deleteTalentPoolRecommendationByResumeIdandJobId(resume_id,job_id){
+
+    const result = await DB.query({
+      text: "DELETE FROM talentpoolrecommendation WHERE resume_id = $1 AND job_id = $2",
+      values: [resume_id,job_id],
+    });
+  }
+
+
+  async moveRecommendedToApplication(job_id,resume_id,candidate_name,candidate_email,ai_screening_recommendation,resume_score,ai_interview_score,interview_id,interview_status){
+
+    const id=nanoid();
+
+    let application_status="pending";
+
+    if(ai_interview_score){
+      application_status="interviewCompleted";
+    }else if(interview_id){
+      application_status="interviewScheduled";
+    }
+
+
+    const result = await DB.query({
+      text: "INSERT INTO applications(application_id,job_id,applicant_user_id,applicant_name,applicant_email,ai_screening_recommendation,resume_score,application_type,ai_interview_score,interview_id,interview_status,application_status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *;",
+      values: [id,job_id,resume_id,candidate_name,candidate_email,ai_screening_recommendation,resume_score,"talentpool",ai_interview_score,interview_id,interview_status,application_status],
+    });
+
+    return result.rows[0];
+
+  }
+
+
   async manualApplicationFix1(){
 
     console.log("in repo");
