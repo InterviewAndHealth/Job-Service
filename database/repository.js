@@ -774,16 +774,34 @@ WHERE
   }
 
 
-  async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type){
+  // async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type){
 
 
-    const result = await DB.query({
-      text: "INSERT INTO talentpoolrecommendation(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;",
-      values: [job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type],
-    });
+  //   const result = await DB.query({
+  //     text: "INSERT INTO talentpoolrecommendation(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11) RETURNING *;",
+  //     values: [job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type],
+  //   });
 
-    return result.rows[0];
+  //   return result.rows[0];
+  // }
+
+
+  async addstudentscandetailsBatch(studentDataArray) {
+    const query = `
+      INSERT INTO talentpoolrecommendation(
+        job_id, recruiter_id, resume_id, candidate_name, candidate_email,
+        contact_number, city, country, ai_screening_recommendation,
+        resume_score, talentpool_type
+      ) VALUES ${studentDataArray.map((_, i) => `($${i * 11 + 1},$${i * 11 + 2},$${i * 11 + 3},$${i * 11 + 4},$${i * 11 + 5},$${i * 11 + 6},$${i * 11 + 7},$${i * 11 + 8},$${i * 11 + 9},$${i * 11 + 10},$${i * 11 + 11})`).join(", ")}
+      RETURNING *;
+    `;
+  
+    const values = studentDataArray.flat();
+  
+    const result = await DB.query({ text: query, values });
+    return result.rows;
   }
+  
 
 
   async scheduleTalentPoolInterview(job_id,resume_id){
@@ -830,7 +848,7 @@ WHERE
   }
 
 
-  async moveRecommendedToApplication(job_id,resume_id,candidate_name,candidate_email,ai_screening_recommendation,resume_score,ai_interview_score,interview_id,interview_status){
+  async moveRecommendedToApplication({job_id,resume_id,candidate_name,candidate_email,ai_screening_recommendation,resume_score,ai_interview_score,interview_id,interview_status}){
 
     const id=nanoid();
 
@@ -842,10 +860,12 @@ WHERE
       application_status="interviewScheduled";
     }
 
+    const application_type="talentpool";
+
 
     const result = await DB.query({
       text: "INSERT INTO applications(application_id,job_id,applicant_user_id,applicant_name,applicant_email,ai_screening_recommendation,resume_score,application_type,ai_interview_score,interview_id,interview_status,application_status) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12) RETURNING *;",
-      values: [id,job_id,resume_id,candidate_name,candidate_email,ai_screening_recommendation,resume_score,"talentpool",ai_interview_score,interview_id,interview_status,application_status],
+      values: [id,job_id,resume_id,candidate_name,candidate_email,ai_screening_recommendation,resume_score,application_type,ai_interview_score,interview_id,interview_status,application_status],
     });
 
     return result.rows[0];
