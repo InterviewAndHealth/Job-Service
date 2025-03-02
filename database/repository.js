@@ -479,6 +479,20 @@ WHERE
   }
 
 
+  async updateApplication(application_id, updateData) {
+    const fields = Object.keys(updateData);
+    const values = Object.values(updateData);
+
+    const setClause = fields.map((field, index) => `${field} = $${index + 2}`).join(', ');
+    const queryText = `UPDATE applications SET ${setClause}, updated_at = CURRENT_TIMESTAMP WHERE application_id = $1 RETURNING *`;
+
+    const result = await DB.query({
+      text: queryText,
+      values: [application_id, ...values],
+    });
+
+    return result.rows[0];
+}
 
 
 

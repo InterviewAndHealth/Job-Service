@@ -120,6 +120,14 @@ router.post(
   }
 );
 
+router.put("/recruiter/updateapplication", authMiddleware, async (req, res) => {
+  const { application_id, ...updateData } = req.body; // Get application_id and update data from the body
+  
+  const data = await service.updateApplication(application_id, updateData);
+  return res.status(200).json(data);
+});
+
+
 // Applicant Routes
 
 router.post("/applicant/applyjob", authMiddleware, async (req, res) => {

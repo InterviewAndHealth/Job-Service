@@ -136,6 +136,22 @@ class Service {
     };
   }
 
+  async updateApplication(application_id, updateData) {
+    const applicationId = application_id;
+    const application = await this.repository.getApplicationById(applicationId);
+    if (!application) throw new NotFoundError("Application not found");
+
+    const updatedApplication = await this.repository.updateApplication(application_id, updateData);
+    if (!updatedApplication) throw new InternalServerError("Failed to update application");
+    
+    return {
+      message: "Application updated successfully",
+      updatedApplication,
+    };
+}
+
+
+
   //Applicants functions
 
   async Applicant_applyJob(job_id,user_id) {
