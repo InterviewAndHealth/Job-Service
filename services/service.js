@@ -693,6 +693,66 @@ async getJobInterview(interview_id){
 
 // }
 
+
+
+
+// async scantalentpool(recruiter_id, job_id) {
+//   const job = await this.repository.getJobByJobId(job_id);
+//   if (!job) throw new NotFoundError("Job not found");
+
+//   const job_description = job.job_description;
+
+//   const [AllInternalStudentUsers, AllTalentPoolUsers, alreadyScannedList] = await Promise.all([
+//     RPCService.request(USERS_RPC, { type: RPC_TYPES.TALENTPOOL_GET_ALL_STUDENT_USERS, data: { recruiter_id } }),
+//     RPCService.request(TALENTPOOL_RPC, { type: RPC_TYPES.TALENTPOOL_GET_ALL_TALENTPOOL_USERS, data: { recruiter_id } }),
+//     this.repository.getalreadyscanned(recruiter_id, job_id),
+//   ]);
+
+//   const alreadyScanned = new Set(alreadyScannedList.map(item => item.resume_id));
+
+//   // Combine Internal + TalentPool Users
+//   const allStudents = [...AllInternalStudentUsers.map(student => ({ ...student, talentpool_type: "internal" })), 
+//                       ...AllTalentPoolUsers.map(student => ({ ...student, talentpool_type: "external" }))];
+
+//   // Filter out already scanned students
+//   const newStudents = allStudents.filter(student => !alreadyScanned.has(student.resume_id));
+
+//   if (newStudents.length === 0) {
+//     return { message: "No new students to scan" };
+//   }
+
+//   // Fetch signed URLs in parallel
+//   const signedUrls = await Promise.all(newStudents.map(student => 
+//     student.talentpool_type === "internal"   ? getInternalSignedUrlForRead(`${student.resume_id}.pdf`)
+//       : getTalentPoolSignedUrlForRead(`${student.resume_id}.pdf`)
+//   ));
+
+//   // Fetch Resume Evaluations in parallel
+//   const resumeEvaluations = await Promise.all(newStudents.map((student, index) => 
+//     RPCService.request(RESUME_RPC, {
+//       type: RPC_TYPES.GET_RESUME_SCORE,
+//       data: { resume: signedUrls[index], job_description }
+//     })
+//   ));
+
+//   // Prepare data for batch insert
+//   const batchInsertData = newStudents.map((student, index) => {
+//     const ai_screening_recommendation = resumeEvaluations[index].score >= 75;
+//     return [
+//       job_id, recruiter_id, student.resume_id, student.candidate_name, student.candidate_email,
+//       student.contact_number, student.city, student.country, ai_screening_recommendation,
+//       resumeEvaluations[index].score, student.talentpool_type
+//     ];
+//   });
+
+//   // Batch insert data into DB
+//   await this.repository.addstudentscandetailsBatch(batchInsertData);
+
+//   return { message: "Scanned Successfully" };
+// }
+
+
+
 async scantalentpool(recruiter_id, job_id) {
   const job = await this.repository.getJobByJobId(job_id);
   if (!job) throw new NotFoundError("Job not found");
@@ -726,25 +786,40 @@ async scantalentpool(recruiter_id, job_id) {
   ));
 
   // Fetch Resume Evaluations in parallel
-  const resumeEvaluations = await Promise.all(newStudents.map((student, index) => 
-    RPCService.request(RESUME_RPC, {
-      type: RPC_TYPES.GET_RESUME_SCORE,
-      data: { resume: signedUrls[index], job_description }
-    })
-  ));
-
+  const resumeEvaluations = await Promise.all(newStudents.map(async (student, index) => {
+    try {
+      return await RPCService.request(RESUME_RPC, {
+        type: RPC_TYPES.GET_RESUME_SCORE,
+        data: { resume: signedUrls[index], job_description }
+      });
+    } catch (error) {
+      console.error(`Error fetching resume score for ${student.resume_id}: ${error.message}`);
+      return null; // Return null for failed evaluations
+    }
+  }));
+  
+  // Filter out students whose resume evaluation failed
+  const successfulEvaluations = newStudents
+    .map((student, index) => ({
+      student,
+      evaluation: resumeEvaluations[index]
+    }))
+    .filter(({ evaluation }) => evaluation !== null);
+  
   // Prepare data for batch insert
-  const batchInsertData = newStudents.map((student, index) => {
-    const ai_screening_recommendation = resumeEvaluations[index].score >= 75;
+  const batchInsertData = successfulEvaluations.map(({ student, evaluation }) => {
+    const ai_screening_recommendation = evaluation.score >= 75;
     return [
       job_id, recruiter_id, student.resume_id, student.candidate_name, student.candidate_email,
       student.contact_number, student.city, student.country, ai_screening_recommendation,
-      resumeEvaluations[index].score, student.talentpool_type
+      evaluation.score, student.talentpool_type
     ];
   });
-
-  // Batch insert data into DB
-  await this.repository.addstudentscandetailsBatch(batchInsertData);
+  
+  // Only insert if there is valid data
+  if (batchInsertData.length > 0) {
+    await this.repository.addstudentscandetailsBatch(batchInsertData);
+  }
 
   return { message: "Scanned Successfully" };
 }
