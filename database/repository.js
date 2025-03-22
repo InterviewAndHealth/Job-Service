@@ -788,6 +788,17 @@ WHERE
   }
 
 
+  async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,talentpool_type){
+
+
+    const result = await DB.query({
+      text: "INSERT INTO talentpoolrecommendation(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,talentpool_type) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING *;",
+      values: [job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,talentpool_type],
+    });
+
+    return result.rows[0];
+  }
+
   // async addstudentscandetails(job_id,recruiter_id,resume_id,candidate_name,candidate_email,contact_number,city,country,ai_screening_recommendation,resume_score,talentpool_type){
 
 
@@ -798,6 +809,18 @@ WHERE
 
   //   return result.rows[0];
   // }
+
+
+  async updatestudentscandetails(job_id,resume_id,ai_screening_recommendation,resume_score,talentpool_type){
+
+    const result = await DB.query({
+      text: "UPDATE talentpoolrecommendation SET ai_screening_recommendation = $1, resume_score = $2 WHERE job_id = $4 AND resume_id = $5 AND talentpool_type = $3 RETURNING *;",
+      values: [ai_screening_recommendation,resume_score,talentpool_type,job_id,resume_id],
+    });
+
+    return result.rows[0];
+
+  }
 
 
   async addstudentscandetailsBatch(studentDataArray) {

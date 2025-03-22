@@ -127,22 +127,44 @@ class JobsService {
     }else if (event.type === "RESUME_SCORED") {
       const { id,score,expalination } = event.data;
 
-      let ai_screening_recommendation=false;
-      const applicationId=id;
+      const [job_id,uniqueid,eventtype]=id.split("-");
 
+      let ai_screening_recommendation=false;
       if(score>=75){
         ai_screening_recommendation=true;
       }
 
-      const updateData={
-        resume_score:score,
-        ai_screening_recommendation
-      }
-  
-      // const temp=this.repository.updateApplication(result.application_id,{resume_score:resumeevaluation.score});
-      const temp=await this.repository.updateApplication(applicationId,updateData);
-      
+      if(eventtype=="Applicant"){
 
+        const updateData={
+          resume_score:score,
+          ai_screening_recommendation
+        }
+        const applicationId=uniqueid;
+    
+        const temp=await this.repository.updateApplication(applicationId,updateData);
+
+
+      }else if(eventtype=="TPScanInternal"){
+        const resume_score=score;
+
+        const talentpool_type="internal";
+        const resume_id=uniqueid;
+
+        const response=await this.repository.updatestudentscandetails(job_id,resume_id,ai_screening_recommendation,resume_score,talentpool_type);
+
+
+      }else if (eventtype=="TPScanPool") {
+
+        const resume_score=score;
+
+        const talentpool_type="external";
+        const resume_id=uniqueid;
+
+        const response=await this.repository.updatestudentscandetails(job_id,resume_id,ai_screening_recommendation,resume_score,talentpool_type);
+
+      }
+      
 
     }
   }

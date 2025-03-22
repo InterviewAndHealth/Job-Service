@@ -216,7 +216,7 @@ class Service {
       EventService.publish(RESUME_QUEUE, {
         type: "GENERATE_RESUME_SCORE",
         data: {
-          id: applicationId,
+          id:`${job_id}-${applicationId}-Applicant`,
           job_description:job_description,
           resume: userDetails.signedUrl,
         },
@@ -537,8 +537,6 @@ async getJobInterview(interview_id){
 
 
 
-
-
 async scantalentpool(recruiter_id,job_id){
 
   const job = await this.repository.getJobByJobId(job_id);
@@ -604,33 +602,19 @@ async scantalentpool(recruiter_id,job_id){
 
 
 
-    const resumeevaluation = await RPCService.request(RESUME_RPC, {
-      type: RPC_TYPES.GET_RESUME_SCORE,
+    EventService.publish(RESUME_QUEUE, {
+      type: "GENERATE_RESUME_SCORE",
       data: {
-        resume:signedUrl,
-        job_description:job_description
+        id: `${job_id}-${student.resume_id}-TPScanInternal`,
+        job_description:job_description,
+        resume:signedUrl
       },
-    });
-
-    console.log(resumeevaluation);
-
-    let ai_screening_recommendation=false;
-
-    if(resumeevaluation.score>=75){
-        ai_screening_recommendation=true;
-    }
-
-    const resume_score=resumeevaluation.score;
-
-    console.log(resume_score);
+    })
 
     const talentpool_type="internal";
 
 
-    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score,talentpool_type);
-
-    console.log(response);
-
+    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,talentpool_type);
 
   }
 
@@ -655,43 +639,181 @@ async scantalentpool(recruiter_id,job_id){
 
     console.log(signedUrl);
 
-
-    const resumeevaluation = await RPCService.request(RESUME_RPC, {
-      type: RPC_TYPES.GET_RESUME_SCORE,
+    EventService.publish(RESUME_QUEUE, {
+      type: "GENERATE_RESUME_SCORE",
       data: {
-        resume:signedUrl,
-        job_description:job_description
+        id:`${job_id}-${student.resume_id}-TPScanPool`,
+        job_description:job_description,
+        resume:signedUrl
       },
-    });
-
-    console.log(resumeevaluation);
-
-    let ai_screening_recommendation=false;
-
-    if(resumeevaluation.score>=75){
-        ai_screening_recommendation=true;
-    }
-
-    const resume_score=resumeevaluation.score;
-
-    console.log(resume_score);
+    })
 
     const talentpool_type="external";
 
 
-    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score,talentpool_type);
+    const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,talentpool_type);
 
-    console.log(response);
-
+   
   }
-
-
-
   return{
-    message:"Scanned Successfully"
+    message:"Scanning Talent Pool"
   }
 
 }
+
+// async scantalentpool(recruiter_id,job_id){
+
+//   const job = await this.repository.getJobByJobId(job_id);
+
+//   console.log("fetching Job details");
+
+//     console.log(job);
+//     if (!job) throw new NotFoundError("Job not found");
+
+//     const job_description=job.job_description;
+
+
+//   const AllInternalStudentUsers=await RPCService.request(USERS_RPC, {
+//     type: RPC_TYPES.TALENTPOOL_GET_ALL_STUDENT_USERS,
+//     data: {
+//       recruiter_id:recruiter_id
+//     },
+//   });
+
+//   console.log("fetching Internal Students Details");
+
+//   console.log(AllInternalStudentUsers);
+
+
+
+//   const AllTalentPoolUsers=await RPCService.request(TALENTPOOL_RPC, {
+//     type: RPC_TYPES.TALENTPOOL_GET_ALL_TALENTPOOL_USERS,
+//     data: {
+//       recruiter_id:recruiter_id
+//     },
+//   });
+
+//   console.log("fetching TalentPool Students Details");
+
+//   console.log(AllTalentPoolUsers);
+
+
+//   const alreadyscanned=await this.repository.getalreadyscanned(recruiter_id,job_id);
+//   console.log("fetching alreadyscanned");
+
+//   console.log(alreadyscanned);
+
+
+//   for (const student of AllInternalStudentUsers) {
+
+//     console.log("in first loop");
+//     console.log(student);
+
+//     if(alreadyscanned.find((item)=>item.resume_id===student.resume_id)){
+//       console.log("already scanned");
+//       continue;
+//     }
+
+//     // const fileName=student.resume_id+".pdf";
+//     const fileName = `${student.resume_id}.pdf`;
+
+//     console.log(fileName);
+
+
+//     const signedUrl=await getInternalSignedUrlForRead(fileName);
+
+//     console.log(signedUrl);
+
+
+
+//     const resumeevaluation = await RPCService.request(RESUME_RPC, {
+//       type: RPC_TYPES.GET_RESUME_SCORE,
+//       data: {
+//         resume:signedUrl,
+//         job_description:job_description
+//       },
+//     });
+
+//     console.log(resumeevaluation);
+
+//     let ai_screening_recommendation=false;
+
+//     if(resumeevaluation.score>=75){
+//         ai_screening_recommendation=true;
+//     }
+
+//     const resume_score=resumeevaluation.score;
+
+//     console.log(resume_score);
+
+//     const talentpool_type="internal";
+
+
+//     const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score,talentpool_type);
+
+//     console.log(response);
+
+
+//   }
+
+
+//   for(const student of AllTalentPoolUsers){
+
+//     console.log("in second loop");
+//     console.log(student);
+
+//     if(alreadyscanned.find((item)=>item.resume_id===student.resume_id)){
+//       console.log("already scanned");
+//       continue;
+//     }
+
+//     // const fileName=student.resume_id+".pdf";
+//     const fileName = `${student.resume_id}.pdf`;
+
+//     console.log(fileName);
+
+
+//     const signedUrl=await getTalentPoolSignedUrlForRead(fileName);
+
+//     console.log(signedUrl);
+
+
+//     const resumeevaluation = await RPCService.request(RESUME_RPC, {
+//       type: RPC_TYPES.GET_RESUME_SCORE,
+//       data: {
+//         resume:signedUrl,
+//         job_description:job_description
+//       },
+//     });
+
+//     console.log(resumeevaluation);
+
+//     let ai_screening_recommendation=false;
+
+//     if(resumeevaluation.score>=75){
+//         ai_screening_recommendation=true;
+//     }
+
+//     const resume_score=resumeevaluation.score;
+
+//     console.log(resume_score);
+
+//     const talentpool_type="external";
+
+
+//     const response=await this.repository.addstudentscandetails(job_id,recruiter_id,student.resume_id,student.candidate_name,student.candidate_email,student.contact_number,student.city,student.country,ai_screening_recommendation,resume_score,talentpool_type);
+
+//     console.log(response);
+
+//   }
+
+
+
+//   return{
+//     message:"Scanned Successfully"
+//   }
+
+// }
 
 
 
